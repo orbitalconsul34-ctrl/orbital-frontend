@@ -1,132 +1,72 @@
 import React, { useState, useEffect } from 'react';
 
+// === CONFIGURACIÓN DE LA RUTA API ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ====================================
+
 const Planes = () => {
+  const [planes, setPlanes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [desktopStartIndex, setDesktopStartIndex] = useState(0);
 
-  // Array de planes actualizado: Se añadieron las consultas individuales y se movió el recomendado.
-  const planes = [
-    {
-      badge: "",
-      tag: "PAQUETE DE EVALUACIÓN",
-      title: "Evaluación Híbrida",
-      subtitle: "1 presencial + 1 virtual",
-      price: "S/ 249",
-      vigencia: "Vigencia 2 meses",
-      imageText: "Evaluación completa para un plan a tu medida.",
-      features: [
-        "Evaluación presencial con InBody + reevaluación desde casa",
-        "Diagnóstico y plan de tratamiento personalizado",
-        "Gráficos de progreso en app"
-      ],
-      img: "/evaluacion-hibrida.jpg",
-      recommended: false
-    },
-    {
-      badge: "★ RECOMENDADO",
-      tag: "PAQUETE DE EVALUACIÓN",
-      title: "Endocrinología + Nutrición",
-      subtitle: "1 endocrino + 1 nutrición · presencial",
-      price: "S/ 289",
-      vigencia: "Vigencia 2 meses",
-      imageText: "Especialistas trabajando juntos por tus resultados.",
-      features: [
-        "Evaluación metabólica (endocrinología) con InBody",
-        "Plan alimentario detallado y personalizado (nutrición)",
-        "Gráficos de progreso en app"
-      ],
-      img: "/endocrinologia-nutricion.jpg",
-      recommended: true
-    },
-    {
-      badge: "",
-      tag: "PAQUETE DE EVALUACIÓN",
-      title: "Evaluación Presencial",
-      subtitle: "1 inicial + 1 reevaluación · presencial",
-      price: "S/ 279",
-      vigencia: "Vigencia 2 meses",
-      imageText: "Tu consulta, con el tiempo y la atención que necesitas.",
-      features: [
-        "Ambas consultas en consultorio, con examen físico e InBody",
-        "Seguimiento de resultados y ajustes",
-        "Gráficos de progreso en app"
-      ],
-      img: "/evaluacion-presencial.jpg",
-      recommended: false
-    },
-    {
-      badge: "",
-      tag: "PAQUETE DE SEGUIMIENTO",
-      title: "Seguimiento Virtual",
-      subtitle: "3 consultas virtuales",
-      price: "S/ 270",
-      vigencia: "Vigencia 6 meses",
-      imageText: "Continúa tu tratamiento, cómodo desde casa.",
-      features: [
-        "Continúa tu tratamiento desde casa",
-        "Monitoreo de tu progreso y ajustes del manejo"
-      ],
-      img: "/seguimiento-virtual.jpg",
-      recommended: false
-    },
-    {
-      badge: "",
-      tag: "PAQUETE DE SEGUIMIENTO",
-      title: "Seguimiento Presencial",
-      subtitle: "3 consultas presenciales",
-      price: "S/ 360",
-      vigencia: "Vigencia 6 meses",
-      imageText: "Tu control de cerca, en el consultorio.",
-      features: [
-        "Control en consultorio con evaluación de tu evolución",
-        "Ajuste del manejo según tu progreso"
-      ],
-      img: "/seguimiento-presencial.jpg",
-      recommended: false
-    },
-    {
-      badge: "",
-      tag: "CONSULTA INDIVIDUAL",
-      title: "Consulta Virtual",
-      subtitle: "1 consulta · virtual",
-      price: "S/ 120",
-      vigencia: "Reevaluación es aparte",
-      imageText: "Diagnóstico y plan de tratamiento personalizado desde tu casa.",
-      features: [
-        "Historia clínica completa",
-        "Solicitud de exámenes según cada caso",
-        "Evaluación de resultados (si los tiene)",
-        "Plan de tratamiento y medicación"
-      ],
-      img: "/consulta-virtual.jpg", // Debes subir esta imagen
-      recommended: false
-    },
-    {
-      badge: "",
-      tag: "CONSULTA INDIVIDUAL",
-      title: "Consulta Presencial",
-      subtitle: "1 consulta · presencial",
-      price: "S/ 150",
-      vigencia: "Reevaluación es aparte",
-      imageText: "Evaluación física completa en nuestro consultorio.",
-      features: [
-        "Historia clínica y examen físico completo (peso, talla, perímetros)",
-        "Análisis de % grasa y masa muscular",
-        "Solicitud de exámenes y plan de tratamiento"
-      ],
-      img: "/consulta-presencial.jpg", // Debes subir esta imagen
-      recommended: false
-    },
-  ];
+  // === CARGA DINÁMICA DESDE EL BACKEND ===
+  useEffect(() => {
+    const fetchPlanes = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/paquetes`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Filtramos solo los activos y adaptamos los nombres de los campos de la BD al frontend
+          const paquetesActivos = data
+            .filter(p => p.estado === 'ACTIVO')
+            .map(p => ({
+              id: p.id,
+              badge: p.destacado ? "★ RECOMENDADO" : "",
+              tag: p.categoria || "PAQUETE",
+              title: p.titulo,
+              subtitle: p.subtitulo,
+              price: `S/ ${Number(p.precio).toFixed(0)}`, // Formatea el precio a entero (ej: S/ 250)
+              vigencia: p.vigencia,
+              imageText: p.encabezado || "Tu consulta, con la atención que necesitas.",
+              features: p.beneficios ? p.beneficios.split('\n').filter(b => b.trim() !== '') : [],
+              img: p.url_imagen || "https://via.placeholder.com/400x500/FFFFFF/2E4B34?text=Sin+Imagen",
+              recommended: p.destacado === 1 || p.destacado === true
+            }));
 
-  // Para que el recomendado (índice 3) quede en el medio en PC (mostrando 3 a la vez),
-  // el desktopStartIndex debe ser el índice del paquete recomendado menos 1.
-  // En este caso: índice 3 (Recomendado) - 1 = 2.
-  const [desktopStartIndex, setDesktopStartIndex] = useState(2); 
+          setPlanes(paquetesActivos);
+
+          // Lógica para que el recomendado (si existe) quede al medio en PC (mostrando 3)
+          const indexRecomendado = paquetesActivos.findIndex(p => p.recommended);
+          if (indexRecomendado !== -1 && paquetesActivos.length >= 3) {
+            // Ponemos el recomendado en la posición del medio restando 1 a su índice original
+            setDesktopStartIndex(Math.max(0, indexRecomendado - 1));
+          } else {
+            setDesktopStartIndex(0);
+          }
+
+        } else {
+          setError('Error al cargar los planes');
+        }
+      } catch (err) {
+        console.error('Error de conexión:', err);
+        setError('Error de conexión con el servidor');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlanes();
+  }, []);
 
   // Auto-slide en celular cada 4.5 segundos
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || planes.length === 0) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % planes.length);
     }, 4500);
@@ -156,6 +96,23 @@ const Planes = () => {
     return `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
   };
 
+  if (loading) {
+    return (
+      <section id="planes" className="w-full pt-24 pb-20 bg-[#F9F6F0] flex justify-center items-center min-h-[500px]">
+        <div className="w-10 h-10 border-4 border-[#256b3c] border-t-transparent rounded-full animate-spin"></div>
+      </section>
+    );
+  }
+
+  if (error || planes.length === 0) {
+    return (
+      <section id="planes" className="w-full pt-24 pb-20 bg-[#F9F6F0] flex flex-col justify-center items-center min-h-[400px]">
+        <h2 className="text-2xl font-bold text-[#1e3325] mb-2 font-raleway">Planes no disponibles</h2>
+        <p className="text-[#6b7280] font-raleway">No se pudieron cargar los paquetes en este momento.</p>
+      </section>
+    );
+  }
+
   return (
     <section id="planes" className="w-full font-raleway pt-24 pb-20 bg-[#F9F6F0] overflow-hidden relative z-10">
       
@@ -169,26 +126,11 @@ const Planes = () => {
           className="w-full h-[40px] md:h-[70px] block"
         >
           {/* Fondo blanco para conectar suavemente con la sección anterior */}
-          <path 
-            d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" 
-            fill="#ffffff"
-          />
+          <path d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" fill="#ffffff" />
           {/* Línea Verde Oscura */}
-          <path 
-            d="M0,50 C400,10 1000,80 1440,40" 
-            fill="none" 
-            stroke="#5c6e4e" 
-            strokeWidth="10" 
-            opacity="0.9"
-          />
+          <path d="M0,50 C400,10 1000,80 1440,40" fill="none" stroke="#5c6e4e" strokeWidth="10" opacity="0.9" />
           {/* Línea Verde Clara */}
-          <path 
-            d="M0,40 C450,80 950,20 1440,50" 
-            fill="none" 
-            stroke="#8b9a7b" 
-            strokeWidth="5" 
-            opacity="0.9"
-          />
+          <path d="M0,40 C450,80 950,20 1440,50" fill="none" stroke="#8b9a7b" strokeWidth="5" opacity="0.9" />
         </svg>
       </div>
 
@@ -422,26 +364,11 @@ const Planes = () => {
           className="w-full h-[40px] md:h-[70px] block -scale-y-100"
         >
           {/* Fondo blanco para conectar suavemente con la sección siguiente */}
-          <path 
-            d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" 
-            fill="#ffffff"
-          />
+          <path d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" fill="#ffffff" />
           {/* Línea Verde Oscura */}
-          <path 
-            d="M0,50 C400,10 1000,80 1440,40" 
-            fill="none" 
-            stroke="#5c6e4e" 
-            strokeWidth="10" 
-            opacity="0.9"
-          />
+          <path d="M0,50 C400,10 1000,80 1440,40" fill="none" stroke="#5c6e4e" strokeWidth="10" opacity="0.9" />
           {/* Línea Verde Clara */}
-          <path 
-            d="M0,40 C450,80 950,20 1440,50" 
-            fill="none" 
-            stroke="#8b9a7b" 
-            strokeWidth="5" 
-            opacity="0.9"
-          />
+          <path d="M0,40 C450,80 950,20 1440,50" fill="none" stroke="#8b9a7b" strokeWidth="5" opacity="0.9" />
         </svg>
       </div>
 

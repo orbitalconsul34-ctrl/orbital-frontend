@@ -1,4 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+// === CONFIGURACIÓN DE LA RUTA API ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ====================================
 
 export default function PanelPaquetes() {
   const [paquetes, setPaquetes] = useState([]);
@@ -7,7 +11,6 @@ export default function PanelPaquetes() {
   
   const fileInputRef = useRef(null);
 
-  // ESTADO INICIAL ADAPTADO AL NUEVO DISEÑO
   const initialState = {
     encabezado: '',
     categoria: '',
@@ -23,9 +26,10 @@ export default function PanelPaquetes() {
 
   const [formData, setFormData] = useState(initialState);
   
-  const API_URL = 'http://localhost:3000/api/paquetes';
-
-  // Credenciales de Cloudinary
+  // === RUTA DINÁMICA ACTUALIZADA ===
+  const API_URL = `${API_BASE_URL}/api/paquetes`;
+  // =================================
+  
   const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/cgfzvuli/image/upload';
   const CLOUDINARY_UPLOAD_PRESET = 'imagines-derma'; 
 
@@ -154,7 +158,6 @@ export default function PanelPaquetes() {
   return (
     <div className="animate-fadeIn font-sans text-slate-800">
       
-      {/* Formulario */}
       <div className={`p-6 rounded-2xl shadow-lg mb-8 transition-all duration-300 ${editingId ? 'bg-rose-50 border-2 border-rose-200' : 'bg-white border border-slate-100'}`}>
         <div className="flex justify-between items-center mb-6">
           <h2 className={`text-2xl font-bold ${editingId ? 'text-rose-700' : 'text-slate-800'}`}>
@@ -294,7 +297,6 @@ export default function PanelPaquetes() {
         </form>
       </div>
 
-      {/* Tabla de Paquetes */}
       <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left border-collapse">

@@ -3,6 +3,10 @@ import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
+// === CONFIGURACIÓN DE LA RUTA API ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ====================================
+
 const ProductosPage = () => {
   const { agregarAlCarrito } = useCart();
   
@@ -10,103 +14,57 @@ const ProductosPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Estados de Filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recomendados");
   const [categoriasActivas, setCategoriasActivas] = useState([]);
   const [especialidadesActivas, setEspecialidadesActivas] = useState([]);
   
-  // Estado para Pestañas de Filtros en Celular (Bottom Sheet)
   const [bottomSheetActivo, setBottomSheetActivo] = useState(null);
   
-  // Estados para el Rango de Precio
   const [maxPrecioReal, setMaxPrecioReal] = useState(1000);
   const [precioFiltro, setPrecioFiltro] = useState(1000);
 
-  // === ARRAY DE ALIADOS ACTUALIZADO ===
   const aliados = [
     "expert (1).png", "imaginesmedicas.png", "comercio.jpg", "antaria.png", "apre.png",
     "intermedica.png", "saludTools.png", "vanttive.png"
   ];
 
+  // === CARGA DINÁMICA DESDE EL BACKEND ===
   useEffect(() => {
-    // Simulamos una carga rápida y pasamos los datos estáticos
-    const cargarProductosEstaticos = () => {
-      const mockProductos = [
-        {
-          id: 1,
-          nombre: "MetaSlim Berb",
-          categoria: "BERBERINA 500MG",
-          especialidad: "Endocrinología",
-          descripcion: "Fórmula orientada al apoyo del metabolismo glucémico y lipídico; contribuye a mejorar la sensibilidad a la insulina. 60 cápsulas.",
-          precio: 140,
-          stock: 50,
-          imagen: "/metaslim.png" 
-        },
-        {
-          id: 2,
-          nombre: "Ashwa Balance",
-          categoria: "ASHWAGANDHA",
-          especialidad: "Bienestar",
-          descripcion: "Apoya el equilibrio neuroendocrino y metabólico; contribuye a moderar los efectos del estrés. 30 cápsulas.",
-          precio: 99,
-          stock: 50,
-          imagen: "/ashwa.png"
-        },
-        {
-          id: 3,
-          nombre: "MagBio Active",
-          categoria: "BISGLICINATO DE MAGNESIO",
-          especialidad: "Nutrición",
-          descripcion: "Apoya el sistema nervioso y favorece la relajación neuromuscular y un descanso más reparador. 30 cápsulas.",
-          precio: 79,
-          stock: 50,
-          imagen: "/magbio.png"
-        },
-        {
-          id: 4,
-          nombre: "Zenthera Zinc",
-          categoria: "BISGLICINATO DE ZINC",
-          especialidad: "Dermatología",
-          descripcion: "Apoya el sistema inmunológico y la salud tiroidea; favorece la salud de piel, cabello y uñas. 30 cápsulas.",
-          precio: 69,
-          stock: 50,
-          imagen: "/zenthera.png"
-        },
-        {
-          id: 5,
-          nombre: "MagCitra Balance",
-          categoria: "CITRATO DE MAGNESIO",
-          especialidad: "Gastroenterología",
-          descripcion: "Favorece la relajación mental y el bienestar digestivo. Contenido de 300 gr.",
-          precio: 59,
-          stock: 50,
-          imagen: "/magcitra.png"
-        },
-        {
-          id: 6,
-          nombre: "Hemo Power",
-          categoria: "HIERRO POLIMALTOSADO",
-          especialidad: "Hematología",
-          descripcion: "Ayuda a prevenir y tratar la anemia; contribuye a la formación normal de glóbulos rojos y hemoglobina. 30 cápsulas.",
-          precio: 60,
-          stock: 50,
-          imagen: "/hemopower.png"
-        }
-      ];
+    const fetchProductos = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/productos`);
+        if (response.ok) {
+          const data = await response.json();
+          const activos = data
+            .filter(p => p.estado === 'ACTIVO')
+            .map(p => ({
+              ...p,
+              precio: Number(p.precio),
+              precio_antes: p.precio_antes ? Number(p.precio_antes) : null,
+              categoria: p.marca || '', 
+              imagen: p.url_imagen_cloudinary || ''
+            }));
 
-      setProductos(mockProductos);
-      
-      if (mockProductos.length > 0) {
-        const maxP = Math.max(...mockProductos.map(p => p.precio));
-        setMaxPrecioReal(maxP);
-        setPrecioFiltro(maxP);
+          setProductos(activos);
+          
+          if (activos.length > 0) {
+            const maxP = Math.max(...activos.map(p => p.precio));
+            setMaxPrecioReal(maxP);
+            setPrecioFiltro(maxP);
+          }
+        } else {
+          setError('Error al cargar productos');
+        }
+      } catch (err) {
+        console.error('Error de conexión:', err);
+        setError('Error de conexión con el servidor');
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
-    setTimeout(cargarProductosEstaticos, 400);
+    fetchProductos();
   }, []);
 
   const categoriasUnicas = [...new Set(productos.map(p => p.categoria).filter(c => c !== ''))];
@@ -128,11 +86,18 @@ const ProductosPage = () => {
     setBottomSheetActivo(null);
   };
 
+  const calcularDescuento = (precioActual, precioAnterior) => {
+    if (precioAnterior && precioAnterior > precioActual) {
+      return Math.round(((precioAnterior - precioActual) / precioAnterior) * 100);
+    }
+    return 0;
+  };
+
   let productosProcesados = productos.filter(p => {
     const textoBuscado = searchTerm.toLowerCase();
     const matchTexto =
       p.nombre.toLowerCase().includes(textoBuscado) ||
-      p.descripcion.toLowerCase().includes(textoBuscado);
+      (p.descripcion && p.descripcion.toLowerCase().includes(textoBuscado));
     
     const matchCategoria = categoriasActivas.length === 0 || categoriasActivas.includes(p.categoria);
     const matchEspecialidad = especialidadesActivas.length === 0 || especialidadesActivas.includes(p.especialidad);
@@ -152,69 +117,44 @@ const ProductosPage = () => {
   return (
     <div className="min-h-screen bg-white font-raleway flex flex-col relative z-10 pb-[70px] lg:pb-0">
       
-      {/* =========================================
-          CABECERA HERO (Con fondo F9F6F0 y Onda)
-          ========================================= */}
       <section className="w-full pt-20 md:pt-28 bg-[#F9F6F0] relative overflow-hidden z-10">
-        
         <div className="max-w-[1050px] mx-auto px-6 text-center pb-8 md:pb-12 relative z-20">
           <span className="text-[#A68A61] font-bold text-[11px] md:text-[13px] tracking-[0.2em] uppercase mb-4 block font-raleway">
             Tienda Virtual — Orbital Salud
           </span>
-          
           <h1 className="text-4xl md:text-5xl lg:text-[54px] font-raleway font-bold text-[#1e3325] mb-6 leading-tight">
             Suplementos <span className="text-[#256b3c] italic">Orbital Salud</span>
           </h1>
-          
           <p className="text-[#6b7280] text-[15px] md:text-[16px] leading-relaxed max-w-3xl mx-auto font-raleway">
             Fórmulas magistrales bajo indicación médica, formuladas en exclusiva para Orbital Salud. Arma tu pedido, revisa el total y coordina el pago — sin medicamentos.
           </p>
-          
           <div className="inline-flex items-center justify-center gap-2 bg-white border border-black/5 px-6 py-2.5 mt-8 rounded-full text-[12px] md:text-[13px] font-bold text-[#1e3325] shadow-sm font-raleway text-center leading-snug">
             <span>🚚 Entrega a domicilio en Lima y envíos a provincia por Shalom · Pago vía Yape o transferencia</span>
           </div>
         </div>
-
         <div className="w-full overflow-hidden leading-none z-0 relative">
           <svg viewBox="0 0 1440 120" className="block w-full h-[50px] md:h-[90px]" preserveAspectRatio="none">
-            <path 
-              d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" 
-              className="fill-white"
-            ></path>
+            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" className="fill-white"></path>
           </svg>
         </div>
       </section>
 
-      {/* =========================================
-          CONTENIDO PRINCIPAL (Productos y Filtros)
-          ========================================= */}
       <div className="flex-grow relative flex flex-col z-20 bg-white">
         <main className="flex-grow max-w-[1250px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 pb-16 relative z-10">
 
-          {/* BUSCADOR */}
           <div className="flex flex-col items-center mb-8 gap-4">
             <div className="relative w-full max-w-[500px]">
-              <input
-                type="text"
-                placeholder="Buscar producto..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 rounded-full border border-gray-200 bg-[#F9F6F0] focus:outline-none focus:border-[#256b3c] focus:ring-1 focus:ring-[#256b3c] text-[#1e3325] text-sm shadow-sm transition-all font-raleway"
-              />
+              <input type="text" placeholder="Buscar producto..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3.5 rounded-full border border-gray-200 bg-[#F9F6F0] focus:outline-none focus:border-[#256b3c] focus:ring-1 focus:ring-[#256b3c] text-[#1e3325] text-sm shadow-sm transition-all font-raleway" />
               <svg className="w-5 h-5 absolute left-5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
-            
-            {/* ASIDE DE FILTROS (SOLO VISIBLE EN PC) */}
             <aside className="hidden lg:block w-[280px] shrink-0">
               <div className="sticky top-24 bg-[#F9F6F0] p-6 rounded-[32px] border border-black/5 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-bold text-[#1e3325] font-raleway">Filtrar por</h3>
-                  {filtrosActivosCount > 0 && (
-                    <button onClick={limpiarFiltros} className="text-[12px] text-red-500 font-bold hover:underline font-raleway">Limpiar</button>
-                  )}
+                  {filtrosActivosCount > 0 && <button onClick={limpiarFiltros} className="text-[12px] text-red-500 font-bold hover:underline font-raleway">Limpiar</button>}
                 </div>
 
                 <div className="mb-8 border-b border-black/5 pb-6">
@@ -256,16 +196,10 @@ const ProductosPage = () => {
               </div>
             </aside>
 
-            {/* ZONA DE PRODUCTOS */}
             <div className="flex-grow">
-              
               <div className="flex justify-between items-center mb-6">
                 <span className="text-[#6b7280] text-[13px] font-medium font-raleway">{productosProcesados.length} productos encontrados</span>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)} 
-                  className="px-4 py-2.5 rounded-full border border-black/5 bg-[#F9F6F0] text-[#1e3325] text-[13px] font-raleway focus:outline-none cursor-pointer shadow-sm font-bold"
-                >
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-4 py-2.5 rounded-full border border-black/5 bg-[#F9F6F0] text-[#1e3325] text-[13px] font-raleway focus:outline-none cursor-pointer shadow-sm font-bold">
                   <option value="recomendados">Ordenar por Recomendados</option>
                   <option value="menor-precio">Menor precio</option>
                   <option value="mayor-precio">Mayor precio</option>
@@ -286,178 +220,162 @@ const ProductosPage = () => {
                 </div>
               )}
 
-              {/* GRID DE PRODUCTOS */}
+              {/* === GRID DE PRODUCTOS (IMÁGENES LIMPIAS Y MÁS GRANDES) === */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                {!loading && !error && productosProcesados.map((prod) => (
-                  <div key={prod.id} className="bg-[#F9F6F0] rounded-[32px] p-4 md:p-6 shadow-sm border border-black/5 flex flex-col h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group/card">
-                    
-                    <Link to={`/producto/${prod.id}`} className="block relative cursor-pointer flex-grow flex flex-col">
-                      
-                      <div className="bg-white rounded-2xl p-4 mb-5 flex justify-center items-center relative h-[160px] md:h-[220px] shadow-sm border border-black/5">
-                        {prod.stock === 0 && (
-                          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
-                            <span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-[11px] transform -rotate-12 font-raleway">Agotado</span>
-                          </div>
-                        )}
-                        <img 
-                          src={prod.imagen} 
-                          alt={prod.nombre} 
-                          className={`h-full object-contain mix-blend-multiply drop-shadow-md transition-transform duration-500 ${prod.stock > 0 ? 'group-hover/card:scale-110' : 'opacity-60'}`}
-                          onError={(e) => { e.target.src = "https://via.placeholder.com/200x200/FFFFFF/2E4B34?text=Sin+Imagen" }}
-                        />
-                      </div>
-
-                      <div className="flex-grow flex flex-col">
-                        <h3 className="font-bold text-[#1e3325] text-[15px] md:text-[18px] leading-tight mb-1.5 font-raleway group-hover/card:text-[#256b3c] transition-colors">
-                          {prod.nombre}
-                        </h3>
-                        <span className="text-[#a3b18a] text-[9px] md:text-[10px] font-bold tracking-widest uppercase block mb-3 font-raleway">
-                          {prod.categoria || prod.especialidad}
-                        </span>
+                {!loading && !error && productosProcesados.map((prod) => {
+                  const descuento = calcularDescuento(prod.precio, prod.precio_antes);
+                  
+                  return (
+                    <div 
+                      key={prod.id} 
+                      className="bg-white rounded-[32px] p-5 md:p-7 flex flex-col h-full 
+                                 border border-[#256b3c]/20 shadow-sm 
+                                 transition-all duration-300 group/card 
+                                 hover:-translate-y-2 hover:border-[#256b3c]/50 hover:shadow-[0_15px_30px_-10px_rgba(37,107,60,0.15)]"
+                    >
+                      <Link to={`/producto/${prod.id}`} className="block relative cursor-pointer flex-grow flex flex-col">
                         
-                        <p className="text-[#6b7280] text-[11px] md:text-[13px] leading-snug line-clamp-3 mb-4 font-raleway">
-                          {prod.descripcion}
-                        </p>
-                      </div>
-                    </Link>
+                        {/* CONTENEDOR DE IMAGEN LIMPIO (Sin fondo, sin sombra, más alto) */}
+                        <div className="bg-transparent mb-4 flex justify-center items-center relative h-[200px] md:h-[280px]">
+                          
+                          {/* ETIQUETA DE DESCUENTO */}
+                          {descuento > 0 && (
+                            <div className="absolute top-0 left-0 bg-[#ff4d4f] text-white font-bold px-3 py-1.5 rounded-full text-[12px] z-20 shadow-md">
+                              -{descuento}% OFF
+                            </div>
+                          )}
 
-                    <div className="mt-auto">
-                      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-5 gap-2">
-                        <span className="font-bold text-[18px] md:text-[22px] text-[#1e3325] font-raleway">
-                          S/ {prod.precio.toFixed(0)}
-                        </span>
-                        <span className="bg-white text-[#8a9096] text-[9px] md:text-[10px] px-2.5 md:px-3 py-1.5 rounded-full font-bold border border-black/5 font-raleway">
-                          Bajo indicación médica
-                        </span>
+                          {prod.stock === 0 && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
+                              <span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-[11px] transform -rotate-12 font-raleway shadow-md">
+                                Agotado
+                              </span>
+                            </div>
+                          )}
+
+                          {/* IMAGEN MÁS GRANDE Y SIN SOMBRA */}
+                          <img 
+                            src={prod.imagen} 
+                            alt={prod.nombre} 
+                            className={`h-full w-full object-contain transition-transform duration-500 ${prod.stock > 0 ? 'group-hover/card:scale-105' : 'opacity-60'}`}
+                            onError={(e) => { e.target.src = "https://via.placeholder.com/200x200/FFFFFF/2E4B34?text=Sin+Imagen" }}
+                          />
+                        </div>
+
+                        <div className="flex-grow flex flex-col">
+                          <h3 className="font-bold text-[#1e3325] text-[16px] md:text-[19px] leading-tight mb-1.5 font-raleway group-hover/card:text-[#256b3c] transition-colors">
+                            {prod.nombre}
+                          </h3>
+                          <span className="text-[#a3b18a] text-[10px] md:text-[11px] font-bold tracking-widest uppercase block mb-3 font-raleway">
+                            {prod.categoria || prod.especialidad}
+                          </span>
+                          <p className="text-[#6b7280] text-[11px] md:text-[13px] leading-snug line-clamp-3 mb-4 font-raleway">
+                            {prod.descripcion}
+                          </p>
+                        </div>
+                      </Link>
+
+                      <div className="mt-auto pt-4 border-t border-gray-100">
+                        
+                        {/* CONTENEDOR DE PRECIO */}
+                        <div className="mb-4">
+                          <div className="flex flex-col">
+                            {/* PRECIO ANTES TACHADO */}
+                            {prod.precio_antes && prod.precio_antes > prod.precio && (
+                              <span className="text-[13px] md:text-[14px] text-slate-400 line-through font-semibold mb-0.5">
+                                S/ {prod.precio_antes.toFixed(2)}
+                              </span>
+                            )}
+                            {/* PRECIO ACTUAL EN UNA SOLA LÍNEA */}
+                            <span className="font-bold text-[24px] md:text-[28px] text-[#1e3325] font-raleway leading-none whitespace-nowrap">
+                              S/ {prod.precio.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => agregarAlCarrito(prod)}
+                          disabled={prod.stock === 0}
+                          className={`w-full font-bold text-[13px] md:text-[15px] py-3.5 md:py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 font-raleway shadow-sm mb-3
+                            ${prod.stock > 0
+                              ? 'bg-[#1e3325] text-white hover:bg-[#256b3c] hover:shadow-lg hover:-translate-y-0.5'
+                              : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                            }`}
+                        >
+                          + Agregar al carrito
+                        </button>
+                        
+                        {/* ETIQUETA INDICACIÓN DEBAJO DEL BOTÓN */}
+                        <div className="text-center">
+                          <span className="text-[#8a9096] text-[10px] md:text-[11px] font-bold font-raleway uppercase tracking-wider">
+                            {prod.indicacion || 'Venta libre'}
+                          </span>
+                        </div>
+
                       </div>
-                      
-                      <button
-                        onClick={() => agregarAlCarrito(prod)}
-                        disabled={prod.stock === 0}
-                        className={`w-full font-bold text-[12px] md:text-[14px] py-3.5 md:py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 font-raleway shadow-sm
-                          ${prod.stock > 0
-                            ? 'bg-[#1e3325] text-white hover:bg-[#256b3c] hover:shadow-md'
-                            : 'bg-white text-gray-400 border border-gray-200 cursor-not-allowed'
-                          }`}
-                      >
-                        + Agregar al carrito
-                      </button>
                     </div>
-
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
             </div>
           </div>
         </main>
 
-        {/* NOTA INFERIOR */}
         <div className="text-center max-w-4xl mx-auto mb-16 px-6">
           <p className="text-[#8a9096] text-[12px] md:text-[13px] font-medium leading-relaxed font-raleway bg-[#F9F6F0] p-4 rounded-2xl border border-black/5">
             También contamos con Basestar (Vitamina D 25,000 y 50,000 UI), Myo Inositol/D-Chiro y Vitamina B12 — consulta disponibilidad con tu médico antes de agregarlos a tu pedido.
           </p>
         </div>
 
-        {/* SECCIÓN DE ALIADOS ESTRATÉGICOS (ACTUALIZADA) */}
         <section className="py-12 border-t border-black/5 bg-white overflow-hidden flex flex-col items-center">
           <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
             Nuestros aliados estratégicos
           </h3>
-          
           <div className="carousel-container relative w-full flex overflow-hidden z-10 mb-4">
             <style>
               {`
-                @keyframes slide {
-                  0% { transform: translateX(0); }
-                  100% { transform: translateX(-100%); }
-                }
-                .animate-slide {
-                  animation: slide 40s linear infinite; 
-                }
-                .carousel-container:hover .animate-slide {
-                  animation-play-state: paused;
-                }
-                @keyframes slideUpModal {
-                  from { transform: translateY(100%); }
-                  to { transform: translateY(0); }
-                }
-                .animate-slide-up-modal {
-                  animation: slideUpModal 0.3s ease-out forwards;
-                }
+                @keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+                .animate-slide { animation: slide 40s linear infinite; }
+                .carousel-container:hover .animate-slide { animation-play-state: paused; }
+                @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+                .animate-slide-up-modal { animation: slideUpModal 0.3s ease-out forwards; }
               `}
             </style>
-
-            {/* Contenedor 1: min-w-full y justify-around hacen que ocupe todo el ancho y no deje huecos */}
             <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
               {aliados.map((logo, index) => (
-                <img 
-                  key={`logo-1-${index}`} 
-                  src={`/${logo}`} 
-                  alt={`Logo Aliado ${index}`} 
-                  className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
-                />
+                <img key={`logo-1-${index}`} src={`/${logo}`} alt="Aliado" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105" />
               ))}
             </div>
-
-            {/* Contenedor 2: El duplicado exacto para el efecto infinito */}
             <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
               {aliados.map((logo, index) => (
-                <img 
-                  key={`logo-2-${index}`} 
-                  src={`/${logo}`} 
-                  alt={`Logo Aliado duplicado ${index}`} 
-                  className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
-                />
+                <img key={`logo-2-${index}`} src={`/${logo}`} alt="Aliado" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105" />
               ))}
             </div>
           </div>
         </section>
-
       </div>
       <Footer />
 
-      {/* =========================================
-          BOTTOM BAR DE FILTROS (SOLO CELULAR)
-          ========================================= */}
       <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-[60] flex justify-around items-center px-2 py-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe">
-        
-        {/* Botón Categorías */}
         <button onClick={() => setBottomSheetActivo('categoria')} className={`flex flex-col items-center gap-1 w-1/3 transition-colors font-raleway ${bottomSheetActivo === 'categoria' || categoriasActivas.length > 0 ? 'text-[#256b3c]' : 'text-[#8a9096]'}`}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" />
-          </svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" /></svg>
           <span className="text-[10px] font-bold">Categorías</span>
         </button>
-
-        {/* Botón Especialidad */}
         <button onClick={() => setBottomSheetActivo('especialidad')} className={`flex flex-col items-center gap-1 w-1/3 transition-colors font-raleway ${bottomSheetActivo === 'especialidad' || especialidadesActivas.length > 0 ? 'text-[#256b3c]' : 'text-[#8a9096]'}`}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-          </svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
           <span className="text-[10px] font-bold">Especialidad</span>
         </button>
-
-        {/* Botón Precio */}
         <button onClick={() => setBottomSheetActivo('precio')} className={`flex flex-col items-center gap-1 w-1/3 transition-colors font-raleway ${bottomSheetActivo === 'precio' || precioFiltro < maxPrecioReal ? 'text-[#256b3c]' : 'text-[#8a9096]'}`}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
           <span className="text-[10px] font-bold">Precio</span>
         </button>
       </div>
 
-      {/* =========================================
-          BOTTOM SHEET MODAL (PANEL DESLIZABLE)
-          ========================================= */}
       {bottomSheetActivo && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center lg:hidden">
-          {/* Fondo oscuro overlay */}
           <div className="absolute inset-0 bg-[#1e3325]/40 backdrop-blur-sm transition-opacity" onClick={() => setBottomSheetActivo(null)}></div>
-          
-          {/* Contenedor blanco que sube */}
           <div className="bg-white w-full rounded-t-3xl p-6 relative z-10 max-h-[80vh] flex flex-col shadow-2xl animate-slide-up-modal font-raleway">
-            
             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
               <h3 className="text-xl font-bold text-[#1e3325] uppercase tracking-wide">
                 {bottomSheetActivo === 'categoria' && 'Categorías'}
@@ -465,53 +383,30 @@ const ProductosPage = () => {
                 {bottomSheetActivo === 'precio' && 'Rango de Precio'}
               </h3>
               <button onClick={() => setBottomSheetActivo(null)} className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 rounded-full">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-
-            {/* Contenido del modal */}
             <div className="overflow-y-auto pb-6">
-              
               {bottomSheetActivo === 'categoria' && categoriasUnicas.map(cat => (
-                <button key={cat} onClick={() => { toggleFiltro(cat, 'categoria'); setBottomSheetActivo(null); }} className={`w-full text-left py-4 px-4 rounded-2xl transition-colors mb-2 ${categoriasActivas.includes(cat) ? 'bg-[#F9F6F0] text-[#256b3c] font-bold border border-[#256b3c]/20' : 'text-[#6b7280] bg-gray-50 hover:bg-gray-100'}`}>
-                  {cat}
-                </button>
+                <button key={cat} onClick={() => { toggleFiltro(cat, 'categoria'); setBottomSheetActivo(null); }} className={`w-full text-left py-4 px-4 rounded-2xl transition-colors mb-2 ${categoriasActivas.includes(cat) ? 'bg-[#F9F6F0] text-[#256b3c] font-bold border border-[#256b3c]/20' : 'text-[#6b7280] bg-gray-50 hover:bg-gray-100'}`}>{cat}</button>
               ))}
-
               {bottomSheetActivo === 'especialidad' && especialidadesUnicas.map(esp => (
-                <button key={esp} onClick={() => { toggleFiltro(esp, 'especialidad'); setBottomSheetActivo(null); }} className={`w-full text-left py-4 px-4 rounded-2xl transition-colors mb-2 ${especialidadesActivas.includes(esp) ? 'bg-[#F9F6F0] text-[#256b3c] font-bold border border-[#256b3c]/20' : 'text-[#6b7280] bg-gray-50 hover:bg-gray-100'}`}>
-                  {esp}
-                </button>
+                <button key={esp} onClick={() => { toggleFiltro(esp, 'especialidad'); setBottomSheetActivo(null); }} className={`w-full text-left py-4 px-4 rounded-2xl transition-colors mb-2 ${especialidadesActivas.includes(esp) ? 'bg-[#F9F6F0] text-[#256b3c] font-bold border border-[#256b3c]/20' : 'text-[#6b7280] bg-gray-50 hover:bg-gray-100'}`}>{esp}</button>
               ))}
-
               {bottomSheetActivo === 'precio' && (
                 <div className="flex flex-col gap-6 py-4 px-2">
                   <div className="flex justify-between items-center text-[#1e3325] font-bold text-lg">
                     <span>Hasta:</span>
                     <span className="bg-[#F9F6F0] px-4 py-1.5 rounded-full text-[#256b3c]">S/ {precioFiltro}</span>
                   </div>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max={maxPrecioReal} 
-                    step="10" 
-                    value={precioFiltro} 
-                    onChange={(e) => setPrecioFiltro(Number(e.target.value))} 
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#256b3c]" 
-                  />
-                  <button onClick={() => setBottomSheetActivo(null)} className="mt-8 w-full bg-[#1e3325] text-white py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-[#256b3c] transition-colors shadow-md">
-                    Aplicar Precio
-                  </button>
+                  <input type="range" min="0" max={maxPrecioReal} step="10" value={precioFiltro} onChange={(e) => setPrecioFiltro(Number(e.target.value))} className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#256b3c]" />
+                  <button onClick={() => setBottomSheetActivo(null)} className="mt-8 w-full bg-[#1e3325] text-white py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-[#256b3c] transition-colors shadow-md">Aplicar Precio</button>
                 </div>
               )}
-
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

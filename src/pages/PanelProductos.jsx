@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
+// === CONFIGURACIÓN DE LA RUTA API ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ====================================
+
 export default function PanelProductos() {
   const [productos, setProductos] = useState([]);
   const [editingId, setEditingId] = useState(null); 
@@ -23,7 +27,10 @@ export default function PanelProductos() {
   };
 
   const [formData, setFormData] = useState(initialState);
-  const API_URL = 'http://localhost:3000/api/productos';
+  
+  // === RUTA DINÁMICA ===
+  const API_URL = `${API_BASE_URL}/api/productos`;
+  // =====================
 
   const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/cgfzvuli/image/upload';
   const CLOUDINARY_UPLOAD_PRESET = 'imagines-derma';
@@ -50,7 +57,6 @@ export default function PanelProductos() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // NUEVA FUNCIÓN: Calcula el porcentaje de descuento matemáticamente
   const calcularDescuento = (precioActual, precioAnterior) => {
     const actual = parseFloat(precioActual);
     const antes = parseFloat(precioAnterior);
@@ -156,7 +162,6 @@ export default function PanelProductos() {
     }
   };
 
-  // Variable para guardar el descuento calculado en tiempo real
   const descuentoActual = calcularDescuento(formData.precio, formData.precio_antes);
 
   return (
@@ -215,7 +220,6 @@ export default function PanelProductos() {
           <div className="md:col-span-1 relative">
             <div className="flex justify-between items-end mb-1">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Precio Antes (Opcional)</label>
-              {/* ETIQUETA DE DESCUENTO EN TIEMPO REAL */}
               {descuentoActual > 0 && (
                 <span className="text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full animate-pulse">
                   -{descuentoActual}% OFF

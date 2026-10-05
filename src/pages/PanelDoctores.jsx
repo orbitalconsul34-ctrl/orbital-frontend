@@ -6,6 +6,10 @@ const DIAS_SEMANA = [
   { id: 4, label: 'Jueves' }, { id: 5, label: 'Viernes' }, { id: 6, label: 'Sábado' }, { id: 0, label: 'Domingo' }
 ];
 
+// === CONFIGURACIÓN DE LA RUTA API ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ====================================
+
 export default function PanelDoctores() {
   const [doctores, setDoctores] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -13,37 +17,41 @@ export default function PanelDoctores() {
   
   const [showForm, setShowForm] = useState(false);
   const [showModalTurnos, setShowModalTurnos] = useState(false);
-  const [showModalReprogramar, setShowModalReprogramar] = useState(false);
   const [doctorSeleccionado, setDoctorSeleccionado] = useState(null);
   
   const [horariosSemanales, setHorariosSemanales] = useState({});
   const [diasBloqueados, setDiasBloqueados] = useState([]);
   const [nuevaFechaBloqueada, setNuevaFechaBloqueada] = useState('');
 
-  const [citasDoctor, setCitasDoctor] = useState([]);
+  // === ESTADOS PARA CITAS EN FILA EXPANDIBLE ===
+  const [todasLasCitas, setTodasLasCitas] = useState([]);
+  const [doctorExpandido, setDoctorExpandido] = useState(null);
   const [citaEditando, setCitaEditando] = useState(null);
   const [nuevaFecha, setNuevaFecha] = useState('');
   const [nuevaHora, setNuevaHora] = useState('');
   
   const fileInputRef = useRef(null);
 
-  // === ESTADO INICIAL (Incluye logo_url en formacion) ===
   const initialState = {
     nombres: '', especialidad: '', titulo: '', correo_corporativo: '',
     foto_url: '', precio: '', duracion_min: '20', google_calendar_id: '', activo: true,
-    formacion: [], // Array de objetos { institucion, grado, periodo, logo_url }
+    formacion: [], 
     cursos: [],    
     experiencia: [] 
   };
 
   const [formData, setFormData] = useState(initialState);
   
-  const API_URL = 'http://localhost:3000/api/doctores';
-  const API_CITAS = 'http://localhost:3000/api/citas';
+  const API_URL = `${API_BASE_URL}/api/doctores`;
+  const API_CITAS = `${API_BASE_URL}/api/citas`;
+  
   const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/cgfzvuli/image/upload';
   const CLOUDINARY_UPLOAD_PRESET = 'imagines-derma'; 
 
-  useEffect(() => { fetchDoctores(); }, []);
+  useEffect(() => { 
+    fetchDoctores(); 
+    fetchAllCitas(); // Carga las citas al iniciar
+  }, []);
 
   const fetchDoctores = async () => {
     try {
@@ -52,80 +60,70 @@ export default function PanelDoctores() {
     } catch (error) { console.error('Error:', error); }
   };
 
-  // ==========================================
-  // LÓGICA DE FORMULARIO DE DOCTOR
-  // ==========================================
+  const fetchAllCitas = async () => {
+    try {
+      // Traemos todas las citas aprobadas para tenerlas listas
+      const response = await fetch(`${API_CITAS}?estado=APROBADO`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }});
+      if (response.ok) setTodasLasCitas(await response.json());
+    } catch (error) { console.error('Error fetching citas:', error); }
+  };
+
   const handleInputChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
   };
 
-  // === FUNCIONES DE FORMACIÓN CON LOGO ===
-  const addFormacion = () => {
-    setFormData({ 
-      ...formData, 
-      formacion: [...formData.formacion, { institucion: '', grado: '', periodo: '', logo_url: '' }] 
-    });
-  };
-
+  const addFormacion = () => setFormData({ ...formData, formacion: [...formData.formacion, { institucion: '', grado: '', periodo: '', logo_url: '' }] });
   const updateFormacion = (index, campo, valor) => {
-    const nuevaFormacion = [...formData.formacion];
-    nuevaFormacion[index][campo] = valor;
-    setFormData({ ...formData, formacion: nuevaFormacion });
+    const nueva = [...formData.formacion];
+    nueva[index][campo] = valor;
+    setFormData({ ...formData, formacion: nueva });
   };
-
   const removeFormacion = (index) => {
-    const nuevaFormacion = [...formData.formacion];
-    nuevaFormacion.splice(index, 1);
-    setFormData({ ...formData, formacion: nuevaFormacion });
+    const nueva = [...formData.formacion];
+    nueva.splice(index, 1);
+    setFormData({ ...formData, formacion: nueva });
   };
 
   const handleLogoUniversidadUpload = async (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
-    
     setIsUploading(true);
     const data = new FormData();
     data.append('file', file);
     data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
     try {
       const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: data });
       const fileData = await res.json();
       updateFormacion(index, 'logo_url', fileData.secure_url);
-    } catch (error) { 
-      alert('Error al subir el logo de la universidad'); 
-    } finally { 
-      setIsUploading(false); 
-    }
+    } catch (error) { alert('Error al subir el logo'); } 
+    finally { setIsUploading(false); }
   };
 
-  // === CURSOS Y EXPERIENCIA ===
   const addCurso = () => setFormData({ ...formData, cursos: [...formData.cursos, ''] });
   const updateCurso = (index, valor) => {
-    const nuevosCursos = [...formData.cursos];
-    nuevosCursos[index] = valor;
-    setFormData({ ...formData, cursos: nuevosCursos });
+    const nuevos = [...formData.cursos];
+    nuevos[index] = valor;
+    setFormData({ ...formData, cursos: nuevos });
   };
   const removeCurso = (index) => {
-    const nuevosCursos = [...formData.cursos];
-    nuevosCursos.splice(index, 1);
-    setFormData({ ...formData, cursos: nuevosCursos });
+    const nuevos = [...formData.cursos];
+    nuevos.splice(index, 1);
+    setFormData({ ...formData, cursos: nuevos });
   };
 
   const addExperiencia = () => setFormData({ ...formData, experiencia: [...formData.experiencia, ''] });
   const updateExperiencia = (index, valor) => {
-    const nuevaExp = [...formData.experiencia];
-    nuevaExp[index] = valor;
-    setFormData({ ...formData, experiencia: nuevaExp });
+    const nueva = [...formData.experiencia];
+    nueva[index] = valor;
+    setFormData({ ...formData, experiencia: nueva });
   };
   const removeExperiencia = (index) => {
-    const nuevaExp = [...formData.experiencia];
-    nuevaExp.splice(index, 1);
-    setFormData({ ...formData, experiencia: nuevaExp });
+    const nueva = [...formData.experiencia];
+    nueva.splice(index, 1);
+    setFormData({ ...formData, experiencia: nueva });
   };
 
-  // === FOTO PRINCIPAL DOCTOR ===
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -178,9 +176,6 @@ export default function PanelDoctores() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ==========================================
-  // LÓGICA DE TURNOS E INTELIGENCIA VISUAL
-  // ==========================================
   const abrirModalTurnos = async (doc) => {
     setDoctorSeleccionado(doc);
     try {
@@ -200,21 +195,18 @@ export default function PanelDoctores() {
     const actual = horariosSemanales[diaId] || [];
     setHorariosSemanales({ ...horariosSemanales, [diaId]: [...actual, { inicio: "09:00", fin: "13:00" }] });
   };
-
   const eliminarRangoHorario = (diaId, index) => {
     const actual = [...horariosSemanales[diaId]];
     actual.splice(index, 1);
-    const nuevoEstado = { ...horariosSemanales, [diaId]: actual };
-    if (actual.length === 0) delete nuevoEstado[diaId]; 
-    setHorariosSemanales(nuevoEstado);
+    const nuevo = { ...horariosSemanales, [diaId]: actual };
+    if (actual.length === 0) delete nuevo[diaId]; 
+    setHorariosSemanales(nuevo);
   };
-
   const actualizarRangoHorario = (diaId, index, campo, valor) => {
     const actual = [...horariosSemanales[diaId]];
     actual[index][campo] = valor;
     setHorariosSemanales({ ...horariosSemanales, [diaId]: actual });
   };
-
   const agregarDiaBloqueado = () => {
     if (nuevaFechaBloqueada && !diasBloqueados.includes(nuevaFechaBloqueada)) {
       setDiasBloqueados([...diasBloqueados, nuevaFechaBloqueada]);
@@ -227,33 +219,23 @@ export default function PanelDoctores() {
       const res = await fetch(`${API_URL}/${doctorSeleccionado.id}/turnos`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
-        body: JSON.stringify({ 
-          horarios_base: JSON.stringify(horariosSemanales), 
-          dias_bloqueados: JSON.stringify(diasBloqueados) 
-        })
+        body: JSON.stringify({ horarios_base: JSON.stringify(horariosSemanales), dias_bloqueados: JSON.stringify(diasBloqueados) })
       });
       if (res.ok) {
-        alert("¡Horarios configurados! El sistema autogenerará el calendario hacia adelante inteligentemente.");
+        alert("¡Horarios configurados!");
         setShowModalTurnos(false);
       }
     } catch (error) { alert("Error al guardar"); }
   };
 
-  // ==========================================
-  // LÓGICA DE REPROGRAMAR CITAS
-  // ==========================================
-  const abrirModalReprogramar = async (doc) => {
-    setDoctorSeleccionado(doc);
-    setCitaEditando(null);
-    try {
-      const res = await fetch(`${API_CITAS}?estado=APROBADO`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }});
-      if (res.ok) {
-        const data = await res.json();
-        const filtradas = data.filter(c => c.doctor === doc.nombres);
-        setCitasDoctor(filtradas);
-      }
-    } catch (error) { console.error(error); }
-    setShowModalReprogramar(true);
+  // === LÓGICA DE FILA EXPANDIBLE ===
+  const toggleCitasDoctor = (id) => {
+    if (doctorExpandido === id) {
+      setDoctorExpandido(null);
+      setCitaEditando(null); // Limpia edición si se cierra
+    } else {
+      setDoctorExpandido(id);
+    }
   };
 
   const iniciarEdicionCita = (cita) => {
@@ -270,17 +252,15 @@ export default function PanelDoctores() {
         body: JSON.stringify({ fecha: nuevaFecha, hora: nuevaHora })
       });
       if (res.ok) {
-        alert('Cita reprogramada con éxito en la base de datos y Google Calendar.');
-        abrirModalReprogramar(doctorSeleccionado);
+        alert('Cita reprogramada con éxito.');
+        setCitaEditando(null);
+        fetchAllCitas(); // Refresca las citas de todos tras reprogramar
       } else {
         alert('Hubo un error al reprogramar.');
       }
     } catch (error) { console.error(error); }
   };
 
-  // ==========================================
-  // RENDERIZADO
-  // ==========================================
   return (
     <div className="animate-fadeIn font-sans text-slate-800">
       
@@ -293,7 +273,6 @@ export default function PanelDoctores() {
         )}
       </div>
 
-      {/* FORMULARIO CREAR / EDITAR */}
       {showForm && (
         <div className={`p-6 rounded-2xl shadow-lg mb-8 transition-all duration-300 ${editingId ? 'bg-sky-50 border-2 border-sky-200' : 'bg-white border border-slate-100'}`}>
           <div className="flex justify-between items-center mb-6">
@@ -304,11 +283,8 @@ export default function PanelDoctores() {
           </div>
           
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            
-            {/* BLOQUE 1: DATOS BÁSICOS */}
             <div className="md:col-span-4 bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
               <h3 className="md:col-span-3 font-bold text-slate-700 border-b pb-2 mb-2">1. Datos Principales</h3>
-              
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Nombres y Apellidos</label>
                 <input type="text" name="nombres" required value={formData.nombres} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" />
@@ -319,18 +295,16 @@ export default function PanelDoctores() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Correo Corporativo</label>
-                <input type="email" name="correo_corporativo" value={formData.correo_corporativo} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" placeholder="Público (ej: hola@orbital.com)" />
+                <input type="email" name="correo_corporativo" value={formData.correo_corporativo} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" placeholder="Público" />
               </div>
               <div className="md:col-span-3">
                 <label className="block text-xs font-bold text-slate-500 mb-1">Subtítulo Descriptivo</label>
-                <input type="text" name="titulo" value={formData.titulo} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400 text-emerald-700 font-medium" placeholder="Ej: Médica Endocrinóloga · Especialista en Obesidad..." />
+                <input type="text" name="titulo" value={formData.titulo} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400 text-emerald-700 font-medium" placeholder="Ej: Médica Endocrinóloga..." />
               </div>
             </div>
 
-            {/* BLOQUE 2: FOTO Y RESERVAS */}
             <div className="md:col-span-4 bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
               <h3 className="md:col-span-3 font-bold text-slate-700 border-b pb-2 mb-2">2. Reservas y Fotografía</h3>
-              
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Precio Consulta (S/)</label>
                 <input type="number" step="0.01" name="precio" required value={formData.precio} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400 font-bold" />
@@ -341,7 +315,7 @@ export default function PanelDoctores() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Google Calendar ID</label>
-                <input type="email" name="google_calendar_id" value={formData.google_calendar_id} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" placeholder="Privado (ej: doc@gmail.com)" />
+                <input type="email" name="google_calendar_id" value={formData.google_calendar_id} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" placeholder="Privado" />
               </div>
 
               <div className="md:col-span-3 flex flex-col md:flex-row gap-5 items-center bg-white p-4 rounded-xl border border-slate-200 mt-2">
@@ -351,7 +325,7 @@ export default function PanelDoctores() {
                   <div className="w-16 h-16 bg-slate-200 rounded-2xl flex items-center justify-center text-xs text-slate-400 text-center leading-tight p-2">Sin foto</div>
                 )}
                 <div className="flex-1 w-full">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Subir Foto Principal (Cloudinary)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Subir Foto Principal</label>
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-100 file:text-sky-700 hover:file:bg-sky-200 cursor-pointer" />
                 </div>
                 <label className="flex items-center gap-2 font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border cursor-pointer shrink-0">
@@ -360,11 +334,9 @@ export default function PanelDoctores() {
               </div>
             </div>
 
-            {/* BLOQUE 3: CURRÍCULUM VITAE (CON LOGOS) */}
             <div className="md:col-span-4 bg-amber-50/50 p-5 rounded-xl border border-amber-200 grid grid-cols-1 gap-6">
               <h3 className="font-bold text-amber-800 border-b border-amber-200 pb-2">3. Currículum y Perfil Público</h3>
               
-              {/* Formación Académica */}
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <label className="font-bold text-slate-700">🎓 Formación Académica</label>
@@ -373,8 +345,6 @@ export default function PanelDoctores() {
                 <div className="space-y-4">
                   {formData.formacion.map((item, idx) => (
                     <div key={idx} className="flex flex-col md:flex-row gap-4 items-start bg-white p-4 rounded-xl border border-amber-100 shadow-sm">
-                      
-                      {/* Logo de la Universidad */}
                       <div className="shrink-0 flex flex-col items-center w-full md:w-24">
                         {item.logo_url ? (
                           <img src={item.logo_url} alt="Logo U" className="w-12 h-12 object-contain bg-slate-50 border rounded-lg p-1" />
@@ -386,23 +356,18 @@ export default function PanelDoctores() {
                           <input type="file" className="hidden" accept="image/*" onChange={(e) => handleLogoUniversidadUpload(e, idx)} />
                         </label>
                       </div>
-
-                      {/* Textos */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-grow w-full">
-                        <input type="text" placeholder="Institución (ej: UNMSM)" value={item.institucion} onChange={(e) => updateFormacion(idx, 'institucion', e.target.value)} className="border p-2 rounded-lg text-sm w-full outline-none focus:border-amber-400" />
-                        <input type="text" placeholder="Grado/Título (ej: Médico-cirujana)" value={item.grado} onChange={(e) => updateFormacion(idx, 'grado', e.target.value)} className="border p-2 rounded-lg text-sm w-full outline-none focus:border-amber-400" />
-                        <input type="text" placeholder="Periodo (ej: 2011 - 2017)" value={item.periodo} onChange={(e) => updateFormacion(idx, 'periodo', e.target.value)} className="border p-2 rounded-lg text-sm w-full md:col-span-2 outline-none focus:border-amber-400" />
+                        <input type="text" placeholder="Institución" value={item.institucion} onChange={(e) => updateFormacion(idx, 'institucion', e.target.value)} className="border p-2 rounded-lg text-sm w-full outline-none focus:border-amber-400" />
+                        <input type="text" placeholder="Grado/Título" value={item.grado} onChange={(e) => updateFormacion(idx, 'grado', e.target.value)} className="border p-2 rounded-lg text-sm w-full outline-none focus:border-amber-400" />
+                        <input type="text" placeholder="Periodo" value={item.periodo} onChange={(e) => updateFormacion(idx, 'periodo', e.target.value)} className="border p-2 rounded-lg text-sm w-full md:col-span-2 outline-none focus:border-amber-400" />
                       </div>
-                      
                       <button type="button" onClick={() => removeFormacion(idx)} className="text-red-400 hover:text-red-600 px-2 font-bold text-xl ml-auto">×</button>
                     </div>
                   ))}
-                  {formData.formacion.length === 0 && <p className="text-xs text-slate-400 italic">No hay estudios registrados.</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cursos */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <label className="font-bold text-slate-700">📜 Cursos y Certificaciones</label>
@@ -415,11 +380,9 @@ export default function PanelDoctores() {
                         <button type="button" onClick={() => removeCurso(idx)} className="text-red-400 hover:text-red-600 px-2 font-bold">×</button>
                       </div>
                     ))}
-                    {formData.cursos.length === 0 && <p className="text-xs text-slate-400 italic">Sin cursos registrados.</p>}
                   </div>
                 </div>
 
-                {/* Experiencia */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <label className="font-bold text-slate-700">💼 Experiencia Laboral</label>
@@ -428,15 +391,13 @@ export default function PanelDoctores() {
                   <div className="space-y-2">
                     {formData.experiencia.map((exp, idx) => (
                       <div key={idx} className="flex gap-2 bg-white p-2 rounded-lg border border-amber-100">
-                        <input type="text" placeholder="Ej: Médica Endocrinóloga, Clínica Tezza" value={exp} onChange={(e) => updateExperiencia(idx, e.target.value)} className="flex-grow outline-none text-sm px-2" />
+                        <input type="text" placeholder="Ej: Médica Endocrinóloga..." value={exp} onChange={(e) => updateExperiencia(idx, e.target.value)} className="flex-grow outline-none text-sm px-2" />
                         <button type="button" onClick={() => removeExperiencia(idx)} className="text-red-400 hover:text-red-600 px-2 font-bold">×</button>
                       </div>
                     ))}
-                    {formData.experiencia.length === 0 && <p className="text-xs text-slate-400 italic">Sin experiencia registrada.</p>}
                   </div>
                 </div>
               </div>
-
             </div>
 
             <div className="md:col-span-4 pt-2">
@@ -461,49 +422,111 @@ export default function PanelDoctores() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {doctores.map(doc => (
-                <tr key={doc.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-4 flex items-center gap-4">
-                    {doc.foto_url ? (
-                      <img src={doc.foto_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-slate-200" />
+              {doctores.map(doc => {
+                // Filtramos las citas que pertenecen a este doctor específico
+                const citasDelDoctor = todasLasCitas.filter(c => c.doctor === doc.nombres);
+                const isExpanded = doctorExpandido === doc.id;
+
+                return (
+                  <React.Fragment key={doc.id}>
+                    {/* FILA PRINCIPAL DEL DOCTOR */}
+                    <tr className={`transition-colors ${isExpanded ? 'bg-purple-50/30' : 'hover:bg-slate-50'}`}>
+                      <td className="p-4 flex items-center gap-4">
+                        {doc.foto_url ? (
+                          <img src={doc.foto_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-slate-200" />
+                        )}
+                        <div>
+                          <div className="font-bold text-slate-800 flex items-center gap-2">
+                            {doc.nombres}
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${doc.activo === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                              {doc.activo === 1 ? 'ACTIVO' : 'INACTIVO'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-emerald-700 font-medium max-w-xs truncate" title={doc.titulo}>{doc.titulo || 'Sin título descriptivo'}</div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm font-medium text-slate-600">{doc.especialidad}</td>
+                      <td className="p-4 font-bold text-slate-700">
+                        S/ {doc.precio} <span className="text-xs text-slate-400 font-normal block">{doc.duracion_min} min</span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => handleEditar(doc)} className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-200">Editar</button>
+                          <button onClick={() => abrirModalTurnos(doc)} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-200">🕒 Turnos</button>
+                          <button 
+                            onClick={() => toggleCitasDoctor(doc.id)} 
+                            className={`${isExpanded ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'} px-3 py-1.5 rounded-lg text-xs font-bold transition-colors`}
+                          >
+                            {isExpanded ? 'Ocultar Citas' : `Ver Citas (${citasDelDoctor.length})`}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* FILA EXPANDIBLE DE CITAS */}
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan="4" className="p-0 border-b-2 border-purple-200 bg-purple-50/30">
+                          <div className="p-6 animate-fadeIn">
+                            <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2">
+                              📅 Citas Activas de {doc.nombres}
+                            </h4>
+                            
+                            {citasDelDoctor.length === 0 ? (
+                              <p className="text-slate-500 text-sm bg-white p-4 rounded-lg border border-dashed border-slate-300 text-center">
+                                Este doctor no tiene citas aprobadas actualmente.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {citasDelDoctor.map(cita => (
+                                  <div key={cita.id} className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm relative">
+                                    <div className="font-bold text-slate-800">{cita.paciente}</div>
+                                    <div className="text-xs text-slate-500 mb-3">{cita.telefono || 'Sin celular'}</div>
+                                    
+                                    <div className="text-sm font-bold text-emerald-600 bg-emerald-50 py-1.5 px-3 rounded-lg mb-3 inline-block">
+                                      {cita.fecha} — {cita.hora}
+                                    </div>
+
+                                    {citaEditando === cita.id ? (
+                                      <div className="flex flex-col gap-2 mt-2 pt-3 border-t border-slate-100">
+                                        <div className="flex gap-2">
+                                          <input type="date" min={new Date().toISOString().split('T')[0]} value={nuevaFecha} onChange={(e)=>setNuevaFecha(e.target.value)} className="border p-1.5 rounded text-xs outline-none w-full" />
+                                          <input type="time" value={nuevaHora} onChange={(e)=>setNuevaHora(e.target.value)} className="border p-1.5 rounded text-xs outline-none w-full" />
+                                        </div>
+                                        <div className="flex gap-2 w-full mt-1">
+                                          <button onClick={() => guardarReprogramacion(cita.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1.5 rounded text-xs w-1/2 font-bold transition-colors">Guardar</button>
+                                          <button onClick={() => setCitaEditando(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1.5 rounded text-xs w-1/2 font-bold transition-colors">Cancelar</button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="mt-2 pt-3 border-t border-slate-100 text-right">
+                                        <button onClick={() => iniciarEdicionCita(cita)} className="text-xs font-bold text-purple-600 hover:text-purple-800 underline">
+                                          Reprogramar Cita
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                    <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-2">
-                        {doc.nombres}
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${doc.activo === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                          {doc.activo === 1 ? 'ACTIVO' : 'INACTIVO'}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-emerald-700 font-medium max-w-xs truncate" title={doc.titulo}>{doc.titulo || 'Sin título descriptivo'}</div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-sm font-medium text-slate-600">{doc.especialidad}</td>
-                  <td className="p-4 font-bold text-slate-700">
-                    S/ {doc.precio} <span className="text-xs text-slate-400 font-normal block">{doc.duracion_min} min</span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => handleEditar(doc)} className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-200">Editar</button>
-                      <button onClick={() => abrirModalTurnos(doc)} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-200">🕒 Turnos</button>
-                      <button onClick={() => abrirModalReprogramar(doc)} className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-purple-200">🔄 Citas</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* =========================================================
-          MODAL 1: CONFIGURAR TURNOS (INTERFAZ VISUAL E INTELIGENTE)
-          ========================================================= */}
+      {/* Modal de Turnos se mantiene intacto */}
       {showModalTurnos && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            
             <div className="sticky top-0 bg-white p-6 border-b flex justify-between items-center z-10">
               <div>
                 <h3 className="font-bold text-xl text-slate-800">🕒 Horarios de {doctorSeleccionado?.nombres}</h3>
@@ -523,37 +546,19 @@ export default function PanelDoctores() {
                     <div key={dia.id} className={`p-4 rounded-xl border transition-colors ${activo ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 bg-slate-50'}`}>
                       <div className="flex justify-between items-center mb-2">
                         <label className="flex items-center gap-3 font-bold text-slate-700 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={activo} 
-                            onChange={() => activo ? setHorariosSemanales({...horariosSemanales, [dia.id]: []}) : agregarRangoHorario(dia.id)}
-                            className="w-5 h-5 accent-emerald-600"
-                          />
+                          <input type="checkbox" checked={activo} onChange={() => activo ? setHorariosSemanales({...horariosSemanales, [dia.id]: []}) : agregarRangoHorario(dia.id)} className="w-5 h-5 accent-emerald-600" />
                           {dia.label}
                         </label>
-                        {activo && (
-                          <button onClick={() => agregarRangoHorario(dia.id)} className="text-xs text-emerald-600 font-bold hover:underline">+ Añadir otro bloque</button>
-                        )}
+                        {activo && <button onClick={() => agregarRangoHorario(dia.id)} className="text-xs text-emerald-600 font-bold hover:underline">+ Añadir otro bloque</button>}
                       </div>
-
                       {activo && (
                         <div className="mt-3 space-y-2 pl-8">
                           {rangos.map((rango, idx) => (
                             <div key={idx} className="flex items-center gap-3">
                               <span className="text-sm text-slate-500">De</span>
-                              <input 
-                                type="time" 
-                                value={rango.inicio} 
-                                onChange={(e) => actualizarRangoHorario(dia.id, idx, 'inicio', e.target.value)}
-                                className="border rounded-lg px-2 py-1 text-sm outline-none focus:border-emerald-400" 
-                              />
+                              <input type="time" value={rango.inicio} onChange={(e) => actualizarRangoHorario(dia.id, idx, 'inicio', e.target.value)} className="border rounded-lg px-2 py-1 text-sm outline-none focus:border-emerald-400" />
                               <span className="text-sm text-slate-500">A</span>
-                              <input 
-                                type="time" 
-                                value={rango.fin} 
-                                onChange={(e) => actualizarRangoHorario(dia.id, idx, 'fin', e.target.value)}
-                                className="border rounded-lg px-2 py-1 text-sm outline-none focus:border-emerald-400" 
-                              />
+                              <input type="time" value={rango.fin} onChange={(e) => actualizarRangoHorario(dia.id, idx, 'fin', e.target.value)} className="border rounded-lg px-2 py-1 text-sm outline-none focus:border-emerald-400" />
                               <button onClick={() => eliminarRangoHorario(dia.id, idx)} className="text-red-400 hover:text-red-600 ml-2" title="Eliminar bloque">🗑️</button>
                             </div>
                           ))}
@@ -566,12 +571,7 @@ export default function PanelDoctores() {
 
               <h4 className="font-bold text-slate-700 mt-8 mb-4 border-b pb-2">2. Fechas Excepcionales Bloqueadas (Vacaciones, Feriados)</h4>
               <div className="flex items-center gap-3 mb-4">
-                <input 
-                  type="date" 
-                  value={nuevaFechaBloqueada} 
-                  onChange={(e) => setNuevaFechaBloqueada(e.target.value)}
-                  className="border rounded-lg p-2 outline-none focus:border-emerald-400"
-                />
+                <input type="date" value={nuevaFechaBloqueada} onChange={(e) => setNuevaFechaBloqueada(e.target.value)} className="border rounded-lg p-2 outline-none focus:border-emerald-400" />
                 <button onClick={agregarDiaBloqueado} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700">Bloquear Día</button>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -583,7 +583,6 @@ export default function PanelDoctores() {
                 ))}
                 {diasBloqueados.length === 0 && <span className="text-sm text-slate-400 italic">No hay fechas bloqueadas.</span>}
               </div>
-
             </div>
 
             <div className="sticky bottom-0 p-5 border-t bg-white flex justify-end gap-3 z-10">
@@ -593,72 +592,6 @@ export default function PanelDoctores() {
           </div>
         </div>
       )}
-
-      {/* =========================================================
-          MODAL 2: REPROGRAMAR CITAS
-          ========================================================= */}
-      {showModalReprogramar && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            
-            <div className="sticky top-0 bg-white p-6 border-b flex justify-between items-center z-10">
-              <h3 className="font-bold text-xl text-slate-800">🔄 Reprogramar citas de {doctorSeleccionado?.nombres}</h3>
-              <button onClick={() => setShowModalReprogramar(false)} className="bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-500 rounded-full w-8 h-8 flex items-center justify-center font-bold">&times;</button>
-            </div>
-            
-            <div className="p-6">
-              {citasDoctor.length === 0 ? (
-                <div className="text-center p-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                  <span className="text-3xl block mb-2">📅</span>
-                  <p className="text-slate-500 font-medium">Este doctor no tiene citas agendadas actualmente.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-left bg-white border border-slate-200 rounded-lg">
-                    <thead className="bg-slate-100 border-b text-slate-600 text-xs uppercase font-bold">
-                      <tr>
-                        <th className="p-3">Paciente</th>
-                        <th className="p-3">Fecha y Hora Actual</th>
-                        <th className="p-3 text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {citasDoctor.map(cita => (
-                        <tr key={cita.id} className="hover:bg-slate-50">
-                          <td className="p-3 font-medium text-slate-800">
-                            {cita.paciente} <br/>
-                            <span className="text-xs text-slate-400 font-normal">{cita.telefono || 'Sin celular'}</span>
-                          </td>
-                          <td className="p-3 text-sm text-slate-600 font-bold text-emerald-600">
-                            {cita.fecha} — {cita.hora}
-                          </td>
-                          <td className="p-3 text-center">
-                            {citaEditando === cita.id ? (
-                              <div className="flex flex-col items-center gap-2 bg-purple-50 p-2 rounded-lg border border-purple-200">
-                                <div className="flex gap-2">
-                                  <input type="date" min={new Date().toISOString().split('T')[0]} value={nuevaFecha} onChange={(e)=>setNuevaFecha(e.target.value)} className="border p-1 rounded text-xs outline-none" />
-                                  <input type="time" value={nuevaHora} onChange={(e)=>setNuevaHora(e.target.value)} className="border p-1 rounded text-xs outline-none" />
-                                </div>
-                                <div className="flex gap-2 w-full">
-                                  <button onClick={() => guardarReprogramacion(cita.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-xs w-1/2 font-bold">Guardar</button>
-                                  <button onClick={() => setCitaEditando(null)} className="bg-slate-300 hover:bg-slate-400 text-slate-700 px-2 py-1 rounded text-xs w-1/2 font-bold">Cancelar</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <button onClick={() => iniciarEdicionCita(cita)} className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-purple-200">Modificar Fecha</button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
