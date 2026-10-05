@@ -38,8 +38,27 @@ const CalculadoraIMC = () => {
     }
   };
 
+  // Función para enviar los resultados por WhatsApp
+  const agendarConResultados = (e) => {
+    e.preventDefault();
+    if (!imcResult) return;
+    
+    // Construir el mensaje con los datos del usuario
+    const mensajeWhatsApp = `Hola, vengo desde la página web de Orbital Salud. 
+Me gustaría agendar una evaluación de mi metabolismo. 
+Estos son los resultados de mi calculadora web:
+- *Peso:* ${peso} kg
+- *Talla:* ${talla} cm
+- *Mi IMC es:* ${imcResult.valor} (${imcResult.categoria})`;
+
+    // Reemplaza los saltos de línea por codificación URL (%0A)
+    const url = `https://wa.me/51981009863?text=${encodeURIComponent(mensajeWhatsApp)}`;
+    
+    window.open(url, '_blank');
+  };
+
   return (
-    <section className="w-full bg-white font-raleway pt-16 flex flex-col">
+    <section id="calculadora" className="w-full bg-white font-raleway pt-16 flex flex-col">
       
       {/* =========================================================
           CONTENEDOR DE LA TARJETA (Con MUCHO margen inferior para separarlo de la onda)
@@ -96,10 +115,14 @@ const CalculadoraIMC = () => {
                   {imcResult.mensaje}
                 </p>
                 
-                <a href="/agenda" className="font-raleway inline-flex items-center gap-2 bg-white text-[#2e4b34] font-bold text-[13px] px-5 py-2 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
+                {/* BOTÓN ACTUALIZADO PARA ENVIAR A WHATSAPP */}
+                <button 
+                  onClick={agendarConResultados} 
+                  className="font-raleway inline-flex items-center gap-2 bg-white text-[#2e4b34] font-bold text-[13px] px-5 py-2 rounded-full hover:bg-gray-100 transition-colors shadow-sm cursor-pointer"
+                >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.74.45 3.37 1.23 4.8L2 22l5.35-1.19A9.952 9.952 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm4.3 14.15c-.23.63-1.32 1.22-1.83 1.3-.51.08-1.18.25-3.32-.64-2.57-1.07-4.22-3.67-4.35-3.84-.13-.17-1.04-1.38-1.04-2.63 0-1.25.65-1.87.89-2.12.23-.25.51-.31.68-.31.17 0 .34 0 .49.01.16.01.37-.06.57.42.21.51.72 1.77.79 1.9.06.13.11.28.02.45-.08.17-.13.28-.25.42-.13.15-.27.32-.38.45-.11.15-.24.31-.1.55.13.23.6 1.01 1.29 1.63.9.8 1.67 1.04 1.9 1.16.23.11.37.09.51-.06.15-.17.65-.75.82-1.01.17-.25.34-.21.55-.13.21.08 1.34.63 1.57.75.23.11.38.17.44.27.06.11.06.63-.17 1.26z"></path></svg>
                   Agenda tu evaluación
-                </a>
+                </button>
                 
                 <p className="font-raleway text-[11px] text-white/60 italic mt-4 border-t border-white/10 pt-3">
                   El IMC no distingue grasa de músculo. Por eso en Orbital medimos tu composición corporal real con InBody antes de cualquier plan.

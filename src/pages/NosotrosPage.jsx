@@ -34,12 +34,13 @@ const NosotrosPage = () => {
       <main className="flex-grow pt-12 pb-20 md:pb-32 relative z-20">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
 
-          {/* === SECCIÓN: NUESTRO ENFOQUE (Estilo Zig-Zag) === */}
+          {/* === SECCIÓN: NUESTRO ENFOQUE === */}
           <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-24 md:mb-32">
             <div className="w-full md:w-1/2 relative group">
-              <div className="relative rounded-[2rem] overflow-hidden shadow-lg h-[350px] md:h-[500px] bg-[#F9F6F0]">
+              {/* === ALTURA REDUCIDA AQUÍ PARA HACERLO MÁS HORIZONTAL === */}
+              <div className="relative rounded-[2rem] overflow-hidden shadow-lg h-[250px] md:h-[320px] lg:h-[380px] bg-[#F9F6F0]">
                 <img 
-                  src="/nosotros-equipo.jpg" 
+                  src="/nosotros.png" 
                   alt="Equipo Médico Orbital Salud" 
                   className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80" }}
@@ -56,7 +57,7 @@ const NosotrosPage = () => {
               </h2>
               <div className="space-y-6">
                 <p lang="es" className="text-[#6b7280] text-[15px] md:text-[16px] leading-relaxed font-raleway text-justify hyphens-auto">
-                  En la medicina tradicional, los pacientes suelen rebotar de un especialista a otro sin encontrar una solución real a sus problemas de peso, fatiga o alteraciones en la piel. Orbital Salud nació con un propósito claro: unificar la endocrinología, nutrición, dermatología y cardiología en un solo lugar.
+                  En la medicina tradicional, los pacientes suelen pasar de una consulta a otra sin encontrar una respuesta integral a sus problemas de peso, fatiga o alteraciones en la piel. Orbital Salud nació con un propósito claro: transformar la manera en que entendemos y cuidamos nuestra salud, con una visión integral que va más allá de los síntomas.
                 </p>
                 <p lang="es" className="text-[#6b7280] text-[15px] md:text-[16px] leading-relaxed font-raleway text-justify hyphens-auto">
                   Entendemos que tu cuerpo es un ecosistema interconectado. Por eso, nuestros especialistas no trabajan aislados, sino que colaboran en equipo para diseñar un plan integral que devuelva el balance a tu metabolismo de forma sostenida y saludable.

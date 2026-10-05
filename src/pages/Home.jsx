@@ -23,7 +23,7 @@ const Home = () => {
   const [errorPlanes, setErrorPlanes] = useState('');
 
   const aliados = [
-    "expert (1).png", "imaginesmedicas.png", "antaria.png" , "apre.png" ,
+    "expert (1).png", "imaginesmedicas.png", "comercio.jpg" , "antaria.png" , "apre.png" ,
     "intermedica.png", "saludTools.png", "vanttive.png"
   ];
 
@@ -95,30 +95,31 @@ const Home = () => {
 
         {/* Sección de Aliados Estratégicos */}
         <section className="pt-12 pb-20 md:pb-28 bg-white overflow-hidden flex flex-col items-center relative z-10">
-  
   <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
     Nuestros aliados estratégicos
   </h3>
   
   <div className="carousel-container relative w-full flex overflow-hidden z-10 mb-4">
-    <div className="flex animate-slide whitespace-nowrap items-center shrink-0">
+    {/* Contenedor 1: min-w-full y justify-around hacen que ocupe todo el ancho y no deje huecos */}
+    <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
       {aliados.map((logo, index) => (
         <img 
           key={`logo-1-${index}`} 
           src={`/${logo}`} 
           alt={`Logo Aliado ${index}`} 
-          className="h-10 md:h-12 w-auto object-contain mx-10 transition-transform duration-300 hover:scale-105"
+          className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
         />
       ))}
     </div>
 
-    <div className="flex animate-slide whitespace-nowrap items-center shrink-0">
+    {/* Contenedor 2: El duplicado exacto para el efecto infinito */}
+    <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
       {aliados.map((logo, index) => (
         <img 
           key={`logo-2-${index}`} 
           src={`/${logo}`} 
           alt={`Logo Aliado duplicado ${index}`} 
-          className="h-10 md:h-12 w-auto object-contain mx-10 transition-transform duration-300 hover:scale-105"
+          className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
         />
       ))}
     </div>

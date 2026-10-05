@@ -4,7 +4,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home'; 
 import NosotrosPage from './pages/NosotrosPage'; 
 import EquipoPage from './pages/EquipoPage';
-import NoticiasPage from './pages/NoticiasPage'; // <--- IMPORTAMOS LA NUEVA PÁGINA
+import NoticiasPage from './pages/NoticiasPage'; 
+import NoticiaDetalle from './pages/NoticiaDetalle'; // <--- IMPORTAMOS LA NUEVA PÁGINA DE DETALLE
 import ContactoPage from './pages/ContactoPage';
 import ReservarCitaPage from './pages/ReservarCitaPage'; 
 import ProductosPage from './pages/ProductosPage'; 
@@ -45,7 +46,10 @@ function AppContent() {
           <Route path="/inbody" element={<InBodyPage />} /> 
           <Route path="/nosotros" element={<NosotrosPage />} />
           <Route path="/equipo" element={<EquipoPage />} />
-          <Route path="/noticias" element={<NoticiasPage />} /> {/* <--- NUEVA RUTA AGREGADA */}
+          
+          <Route path="/noticias" element={<NoticiasPage />} /> 
+          <Route path="/noticias/:id" element={<NoticiaDetalle />} /> {/* <--- NUEVA RUTA AGREGADA PARA EL DETALLE */}
+          
           <Route path="/contacto" element={<ContactoPage />} /> 
           <Route path="/reservar-cita" element={<ReservarCitaPage />} /> 
           <Route path="/productos" element={<ProductosPage />} /> 

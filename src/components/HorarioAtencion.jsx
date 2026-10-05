@@ -76,8 +76,9 @@ const HorarioAtencion = () => {
               Escríbenos por WhatsApp y te confirmamos el horario disponible según la especialidad que necesites — algunas atienden también de forma virtual.
             </p>
             <div>
+              {/* BOTÓN WHATSAPP ACTUALIZADO CON LINK Y MENSAJE */}
               <a 
-                href="https://whatsapp.com" 
+                href="https://wa.me/51981009863?text=Hola,%20me%20gustar%C3%ADa%20agendar%20una%20cita.%20%C2%BFQu%C3%A9%20horarios%20tienen%20disponibles,%20por%20favor?" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="font-raleway inline-flex items-center gap-2.5 bg-[#1b6132] text-white font-bold text-[14px] px-7 py-3.5 rounded-full shadow-[0_10px_25px_rgba(27,97,50,0.3)] hover:bg-[#154e28] transition-all"

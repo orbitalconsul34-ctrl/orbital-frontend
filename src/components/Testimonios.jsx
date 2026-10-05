@@ -124,19 +124,45 @@ const Testimonios = () => {
       <div className="pt-8 md:pt-12 max-w-[1200px] mx-auto px-4 lg:px-8 w-full">
         
         {/* Cabecera */}
-        <div className="text-center mb-12 md:mb-14">
+        <div className="text-center mb-12">
           <span className="font-raleway text-[#6B7C5A] font-bold text-[12px] md:text-[14px] tracking-[0.2em] uppercase mb-3 block">
             TESTIMONIOS
           </span>
           <h2 className="font-raleway text-[30px] md:text-[42px] text-[#1e3325] font-bold leading-tight mb-4">
             Lo que dicen nuestros pacientes
           </h2>
-          <p className="font-raleway text-[#6b7280] text-[14px] md:text-[16px]">
+          <p className="font-raleway text-[#6b7280] text-[14px] md:text-[16px] mb-10">
             Reseñas reales de pacientes en Google — con una valoración de 5.0<span className="text-[#facc15] ml-1 text-[18px]">★</span>.
           </p>
+
+          {/* =========================================
+              CONTENEDOR DEL VIDEO PRINCIPAL
+              ========================================= */}
+          <div className="w-full max-w-[800px] mx-auto bg-black rounded-[24px] md:rounded-[32px] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.15)] relative aspect-video border-4 border-white">
+            
+            {/* Aquí puedes reemplazar el iframe con tu video real de YouTube, Vimeo o una etiqueta <video> */}
+            <iframe 
+              className="absolute top-0 left-0 w-full h-full"
+              src="https://www.youtube.com/embed/TU_VIDEO_AQUI?rel=0&modestbranding=1" 
+              title="Testimonio Paciente Orbital Salud"
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+            ></iframe>
+            
+            {/* Placeholder por si no has puesto el link del video aún. 
+                (Puedes borrar este div cuando coloques tu video real en el iframe de arriba) */}
+            <div className="absolute inset-0 bg-[#1e3325] flex flex-col items-center justify-center text-white pointer-events-none">
+              <svg className="w-16 h-16 opacity-50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span className="font-raleway text-sm opacity-70 tracking-widest uppercase">Espacio para Video Testimonio</span>
+            </div>
+            
+          </div>
         </div>
 
+        {/* Carrusel de reseñas escritas */}
         <div 
+          className="mt-16"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >

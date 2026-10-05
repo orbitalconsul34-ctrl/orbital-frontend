@@ -65,13 +65,42 @@ const DoctorGrid = ({ equipoData, loading, error }) => {
       }
     },
     { 
-      id: 6, nombre: "Lic. Carolina Moreno", especialidad: "Nutrición", imagen: "/carolina-moreno.jpg",
+      id: 6, nombre: "Lic. Leonardo Palacios", especialidad: "Nutrición Clínica", imagen: "/leonardo-palacios.jpg",
       detalle: {
-        tituloCompleto: "Licenciada en Nutrición · Enfoque integral y planes personalizados",
-        formacion: [{ institucion: "Universidad Ejemplo", grado: "Licenciatura en Nutrición", periodo: "2016 - 2021" }],
-        cursos: [], experiencia: []
+        tituloCompleto: "Licenciado en Nutrición y Dietética · CNP 8839",
+        formacion: [
+          { institucion: "Universidad Privada del Norte (UPN)", grado: "Licenciado en Nutrición y Dietética", periodo: "Formativo", logoBg: "bg-[#256b3c]" },
+          { institucion: "Universidad Peruana Cayetano Heredia (UPCH)", grado: "Estudios de Posgrado", periodo: "Formativo", logoBg: "bg-[#1e3325]" },
+          { institucion: "Instituto Universitario Vive Sano (Brasil)", grado: "Estudios Internacionales", periodo: "Formativo", logoBg: "bg-[#8a9096]" }
+        ],
+        cursos: [
+          "1er Congreso Peruano y Conferencia Anual del Medicamento Individualizado",
+          "Certificación por la Escuela de Salud Rebagliati"
+        ],
+        experiencia: [
+          "Nutricionista en AndoSalud (Centro Especializado en Diabetes, Obesidad & Pie Diabético)",
+          "Nutricionista en NutraMed (Nutrición y Medicina Clínica)",
+          "MINSA - Dirección de Redes Integradas de Salud (DIRIS) Lima Centro"
+        ]
       }
     },
+    { 
+      id: 7, nombre: "Lic. Alexia Iza Farfan", especialidad: "Nutrición Clínica", imagen: "/alexia-iza.jpg",
+      detalle: {
+        tituloCompleto: "Nutricionista Clínica · Licenciada en Nutrición y Dietética CNP 9882",
+        formacion: [
+          { institucion: "Universidad Nacional", grado: "Licenciada en Nutrición y Dietética", periodo: "Formativo", logoBg: "bg-[#256b3c]" }
+        ],
+        cursos: [
+          "Abordaje nutricional en Diabetes Mellitus e Hipertensión Arterial",
+          "Manejo dietético de Dislipidemias, Hígado Graso y Enfermedad Renal"
+        ],
+        experiencia: [
+          "Nutricionista Clínica en Centro de Salud Bodhisana (Jul 2025 - Actualidad)",
+          "Nutricionista en Servicio de Alimentación - California, EE.UU. (Dic 2023 - Abr 2024)"
+        ]
+      }
+    }
   ];
 
   const dataToRender = equipoData && equipoData.length > 0 ? equipoData : defaultEquipo;
@@ -115,7 +144,7 @@ const DoctorGrid = ({ equipoData, loading, error }) => {
           </svg>
         </div>
 
-        <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
           
           <div className="text-center mb-10 md:mb-14 pt-8">
             <span className="text-[#8a9096] font-bold text-[10px] md:text-[11px] tracking-[0.2em] uppercase font-raleway block mb-3 md:mb-4">
@@ -132,7 +161,8 @@ const DoctorGrid = ({ equipoData, loading, error }) => {
           {loading && <p className="text-center text-[#6b7280] mb-8 font-raleway">Cargando equipo médico...</p>}
           {error && <p className="text-center text-red-500 mb-8 font-raleway">{error}</p>}
 
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+          {/* AQUÍ ESTÁ EL CAMBIO: grid-cols-2 md:grid-cols-4 lg:grid-cols-7 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 md:gap-4 lg:gap-5">
             {dataToRender.map((doc) => (
               <div 
                 key={doc.id} 
@@ -154,8 +184,8 @@ const DoctorGrid = ({ equipoData, loading, error }) => {
                    </div>
                 </div>
                 
-                <div className="p-3 md:p-4 text-center flex-grow flex flex-col justify-center items-center bg-white relative z-10">
-                  <h3 className="font-raleway text-[13px] md:text-[15px] font-bold text-[#1e3325] mb-1 leading-tight transition-colors duration-300 group-hover:text-[#256b3c]">
+                <div className="p-3 md:p-3 xl:p-4 text-center flex-grow flex flex-col justify-center items-center bg-white relative z-10">
+                  <h3 className="font-raleway text-[12px] md:text-[13px] xl:text-[15px] font-bold text-[#1e3325] mb-1 leading-tight transition-colors duration-300 group-hover:text-[#256b3c]">
                     {doc.nombre}
                   </h3>
                   <p className="text-[#6b7280] font-raleway text-[10px] md:text-[11px] font-bold">
@@ -170,10 +200,6 @@ const DoctorGrid = ({ equipoData, loading, error }) => {
             <p className="text-[11px] md:text-[12px] text-[#8a9096] mb-6 md:mb-8 font-raleway italic px-4">
               Haz click en la foto de cada especialista para ver su formación profesional.
             </p>
-            
-            <button className="border border-[#1e3325] text-[#1e3325] bg-transparent font-raleway font-bold text-[13px] md:text-[14px] px-8 py-3 rounded-full hover:bg-[#1e3325] hover:text-white transition-colors duration-300">
-              Conoce al equipo completo
-            </button>
           </div>
 
         </div>

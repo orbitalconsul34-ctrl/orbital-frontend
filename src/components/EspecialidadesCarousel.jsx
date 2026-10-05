@@ -173,16 +173,7 @@ const EspecialidadesCarousel = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
             </button>
           </div>
-        </div>
-
-        <div className="mt-12 text-center relative z-30">
-          <Link 
-            to="/especialidades" 
-            className="inline-block border border-[#256b3c] text-[#1e3325] px-8 py-3.5 rounded-full text-[14px] font-bold hover:bg-[#1a3d24] hover:border-[#1a3d24] hover:text-white transition-all duration-300 shadow-sm font-raleway"
-          >
-            Ver todas las especialidades
-          </Link>
-        </div>
+        </div>  
 
       </div>
 

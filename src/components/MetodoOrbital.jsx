@@ -196,9 +196,9 @@ const ProcesoAtencion = () => {
               </button>
             </div>
 
-            {/* Botón de WhatsApp */}
+            {/* BOTÓN WHATSAPP ACTUALIZADO */}
             <a 
-              href="https://wa.me/51987654321" 
+              href="https://wa.me/51981009863?text=Hola,%20me%20gustar%C3%ADa%20agendar%20una%20cita%20para%20iniciar%20mi%20tratamiento%20en%20Orbital%20Salud,%20por%20favor." 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-[#256b3c] text-white px-8 py-3.5 rounded-full font-bold text-[14px] md:text-[15px] hover:bg-[#1a4a2a] transition-all shadow-[0_4px_14px_rgba(37,107,60,0.39)] font-raleway mb-12"

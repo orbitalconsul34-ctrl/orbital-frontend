@@ -8,39 +8,6 @@ const Planes = () => {
   const planes = [
     {
       badge: "",
-      tag: "CONSULTA INDIVIDUAL",
-      title: "Consulta Virtual",
-      subtitle: "1 consulta · virtual",
-      price: "S/ 120",
-      vigencia: "Reevaluación es aparte",
-      imageText: "Diagnóstico y plan de tratamiento personalizado desde tu casa.",
-      features: [
-        "Historia clínica completa",
-        "Solicitud de exámenes según cada caso",
-        "Evaluación de resultados (si los tiene)",
-        "Plan de tratamiento y medicación"
-      ],
-      img: "/consulta-virtual.jpg", // Debes subir esta imagen
-      recommended: false
-    },
-    {
-      badge: "",
-      tag: "CONSULTA INDIVIDUAL",
-      title: "Consulta Presencial",
-      subtitle: "1 consulta · presencial",
-      price: "S/ 150",
-      vigencia: "Reevaluación es aparte",
-      imageText: "Evaluación física completa en nuestro consultorio.",
-      features: [
-        "Historia clínica y examen físico completo (peso, talla, perímetros)",
-        "Análisis de % grasa y masa muscular",
-        "Solicitud de exámenes y plan de tratamiento"
-      ],
-      img: "/consulta-presencial.jpg", // Debes subir esta imagen
-      recommended: false
-    },
-    {
-      badge: "",
       tag: "PAQUETE DE EVALUACIÓN",
       title: "Evaluación Híbrida",
       subtitle: "1 presencial + 1 virtual",
@@ -116,7 +83,40 @@ const Planes = () => {
       ],
       img: "/seguimiento-presencial.jpg",
       recommended: false
-    }
+    },
+    {
+      badge: "",
+      tag: "CONSULTA INDIVIDUAL",
+      title: "Consulta Virtual",
+      subtitle: "1 consulta · virtual",
+      price: "S/ 120",
+      vigencia: "Reevaluación es aparte",
+      imageText: "Diagnóstico y plan de tratamiento personalizado desde tu casa.",
+      features: [
+        "Historia clínica completa",
+        "Solicitud de exámenes según cada caso",
+        "Evaluación de resultados (si los tiene)",
+        "Plan de tratamiento y medicación"
+      ],
+      img: "/consulta-virtual.jpg", // Debes subir esta imagen
+      recommended: false
+    },
+    {
+      badge: "",
+      tag: "CONSULTA INDIVIDUAL",
+      title: "Consulta Presencial",
+      subtitle: "1 consulta · presencial",
+      price: "S/ 150",
+      vigencia: "Reevaluación es aparte",
+      imageText: "Evaluación física completa en nuestro consultorio.",
+      features: [
+        "Historia clínica y examen físico completo (peso, talla, perímetros)",
+        "Análisis de % grasa y masa muscular",
+        "Solicitud de exámenes y plan de tratamiento"
+      ],
+      img: "/consulta-presencial.jpg", // Debes subir esta imagen
+      recommended: false
+    },
   ];
 
   // Para que el recomendado (índice 3) quede en el medio en PC (mostrando 3 a la vez),
@@ -147,6 +147,13 @@ const Planes = () => {
   };
   const handleNextDesktop = () => {
     setDesktopStartIndex((prev) => Math.min(planes.length - 3, prev + 1));
+  };
+
+  // === FUNCIÓN PARA GENERAR LINK DE WHATSAPP DINÁMICO ===
+  const getWhatsAppLink = (plan) => {
+    const numeroWhatsApp = "51981009863"; // Tu número
+    const mensaje = `Hola, vengo desde la página web de Orbital Salud. Me gustaría agendar la siguiente opción:\n\n*${plan.title}*\n${plan.subtitle}\nPrecio: ${plan.price}\n\n¿Podrían brindarme información sobre la disponibilidad, por favor?`;
+    return `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
   };
 
   return (
@@ -277,7 +284,9 @@ const Planes = () => {
                 </div>
 
                 <a 
-                  href="/contacto" 
+                  href={getWhatsAppLink(planes[currentIndex])}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`font-raleway w-full py-3.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-all ${planes[currentIndex].recommended ? 'bg-[#256b3c] text-white shadow-md hover:bg-[#1a4a2a]' : 'border border-gray-300 text-[#1e3325] hover:bg-[#2E4B34] hover:text-white hover:border-[#2E4B34]'}`}
                 >
                   Agendar este paquete →
@@ -360,7 +369,9 @@ const Planes = () => {
                     </div>
 
                     <a 
-                      href="/contacto" 
+                      href={getWhatsAppLink(plan)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={`font-raleway w-full py-3.5 rounded-full font-bold text-[14px] flex items-center justify-center gap-2 transition-all ${plan.recommended ? 'bg-[#256b3c] text-white shadow-md hover:bg-[#1a4a2a]' : 'border border-gray-300 text-[#1e3325] hover:bg-[#2E4B34] hover:text-white hover:border-[#2E4B34]'}`}
                     >
                       Agendar este paquete →

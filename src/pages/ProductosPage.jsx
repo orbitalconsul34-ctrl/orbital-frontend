@@ -23,10 +23,10 @@ const ProductosPage = () => {
   const [maxPrecioReal, setMaxPrecioReal] = useState(1000);
   const [precioFiltro, setPrecioFiltro] = useState(1000);
 
-  // Array de aliados
+  // === ARRAY DE ALIADOS ACTUALIZADO ===
   const aliados = [
-    "adium.png", "expert (1).png", "imaginesmedicas.png", "integral.png",
-    "intermedica.png", "novo.png", "saludTools.png", "sermed.png", "vanttive.png"
+    "expert (1).png", "imaginesmedicas.png", "comercio.jpg", "antaria.png", "apre.png",
+    "intermedica.png", "saludTools.png", "vanttive.png"
   ];
 
   useEffect(() => {
@@ -150,7 +150,6 @@ const ProductosPage = () => {
   const filtrosActivosCount = categoriasActivas.length + especialidadesActivas.length + (precioFiltro < maxPrecioReal ? 1 : 0);
 
   return (
-    // Agregamos pb-16 en móvil para que el contenido no quede debajo del bottom bar
     <div className="min-h-screen bg-white font-raleway flex flex-col relative z-10 pb-[70px] lg:pb-0">
       
       {/* =========================================
@@ -164,7 +163,7 @@ const ProductosPage = () => {
           </span>
           
           <h1 className="text-4xl md:text-5xl lg:text-[54px] font-raleway font-bold text-[#1e3325] mb-6 leading-tight">
-            Suplementos <span className="text-[#256b3c] italic">Endo Orbital</span>
+            Suplementos <span className="text-[#256b3c] italic">Orbital Salud</span>
           </h1>
           
           <p className="text-[#6b7280] text-[15px] md:text-[16px] leading-relaxed max-w-3xl mx-auto font-raleway">
@@ -360,13 +359,13 @@ const ProductosPage = () => {
           </p>
         </div>
 
-        {/* SECCIÓN DE ALIADOS ESTRATÉGICOS */}
-        <section className="py-12 border-t border-black/5 bg-[#F9F6F0] overflow-hidden flex flex-col items-center">
-          <h3 className="text-[#A68A61] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-raleway text-center">
+        {/* SECCIÓN DE ALIADOS ESTRATÉGICOS (ACTUALIZADA) */}
+        <section className="py-12 border-t border-black/5 bg-white overflow-hidden flex flex-col items-center">
+          <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
             Nuestros aliados estratégicos
           </h3>
           
-          <div className="carousel-container relative w-full flex overflow-hidden">
+          <div className="carousel-container relative w-full flex overflow-hidden z-10 mb-4">
             <style>
               {`
                 @keyframes slide {
@@ -388,25 +387,27 @@ const ProductosPage = () => {
                 }
               `}
             </style>
-            
-            <div className="flex animate-slide whitespace-nowrap items-center shrink-0">
+
+            {/* Contenedor 1: min-w-full y justify-around hacen que ocupe todo el ancho y no deje huecos */}
+            <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
               {aliados.map((logo, index) => (
                 <img 
                   key={`logo-1-${index}`} 
                   src={`/${logo}`} 
                   alt={`Logo Aliado ${index}`} 
-                  className="h-10 md:h-12 w-auto object-contain mx-10 transition-transform duration-300 hover:scale-105 filter grayscale hover:grayscale-0"
+                  className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
                 />
               ))}
             </div>
 
-            <div className="flex animate-slide whitespace-nowrap items-center shrink-0">
+            {/* Contenedor 2: El duplicado exacto para el efecto infinito */}
+            <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
               {aliados.map((logo, index) => (
                 <img 
                   key={`logo-2-${index}`} 
                   src={`/${logo}`} 
                   alt={`Logo Aliado duplicado ${index}`} 
-                  className="h-10 md:h-12 w-auto object-contain mx-10 transition-transform duration-300 hover:scale-105 filter grayscale hover:grayscale-0"
+                  className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
                 />
               ))}
             </div>
@@ -429,7 +430,7 @@ const ProductosPage = () => {
           <span className="text-[10px] font-bold">Categorías</span>
         </button>
 
-        {/* Botón Especialidad (En lugar de Marcas) */}
+        {/* Botón Especialidad */}
         <button onClick={() => setBottomSheetActivo('especialidad')} className={`flex flex-col items-center gap-1 w-1/3 transition-colors font-raleway ${bottomSheetActivo === 'especialidad' || especialidadesActivas.length > 0 ? 'text-[#256b3c]' : 'text-[#8a9096]'}`}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />

@@ -134,12 +134,12 @@ const NoticiasPage = () => {
       <main className="flex-grow pt-10 pb-20 bg-white">
         <div className="max-w-[1250px] mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* ARTÍCULO DESTACADO (Siempre visible, sin condicional) */}
+          {/* ARTÍCULO DESTACADO (Convertido en <Link>) */}
           <div className="mb-12 md:mb-16 group cursor-pointer animate-fadeIn">
             <span className="text-[#8a9096] font-bold text-[10px] md:text-[11px] tracking-[0.2em] uppercase block mb-4 font-raleway">
               Destacado de la semana
             </span>
-            <div className="flex flex-col lg:flex-row bg-[#F9F6F0] rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-black/5">
+            <Link to={`/noticias/${articuloDestacado.id}`} className="flex flex-col lg:flex-row bg-[#F9F6F0] rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-black/5">
               
               <div className="w-full lg:w-3/5 lg:order-2 aspect-[16/9] lg:aspect-auto overflow-hidden bg-[#efe8d8] relative">
                 <img 
@@ -167,7 +167,7 @@ const NoticiasPage = () => {
                 </p>
                 <span className="text-[#8a9096] text-[13px] font-raleway font-medium mt-auto">{articuloDestacado.fecha}</span>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* BARRA DE FILTROS SUPERIOR */}
@@ -210,7 +210,12 @@ const NoticiasPage = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {articulosFiltrados.map((articulo) => (
-                    <div key={articulo.id} className="bg-white rounded-[20px] overflow-hidden group cursor-pointer flex flex-col h-full border border-black/10 hover:border-[#256b3c]/40 hover:shadow-lg transition-all duration-300 animate-fadeIn">
+                    // Convertido a <Link>
+                    <Link 
+                      key={articulo.id} 
+                      to={`/noticias/${articulo.id}`}
+                      className="bg-white rounded-[20px] overflow-hidden group cursor-pointer flex flex-col h-full border border-black/10 hover:border-[#256b3c]/40 hover:shadow-lg transition-all duration-300 animate-fadeIn"
+                    >
                       <div className="w-full aspect-[4/3] overflow-hidden bg-[#efe8d8]">
                         <img 
                           src={articulo.imagen} 
@@ -235,7 +240,7 @@ const NoticiasPage = () => {
                         </p>
                         <span className="text-[#8a9096] text-[11px] font-raleway mt-auto">{articulo.fecha}</span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -244,7 +249,7 @@ const NoticiasPage = () => {
             {/* LADO DERECHO: Sidebar (4 columnas) */}
             <div className="lg:col-span-4 flex flex-col gap-6 sticky top-24">
               
-              {/* Widget: Newsletter Editado */}
+              {/* Widget: Newsletter */}
               <div className="bg-[#1e3325] rounded-[24px] p-6 shadow-md font-raleway">
                 <h4 className="text-[#a3b18a] font-bold text-[10px] tracking-[0.2em] uppercase mb-3 font-raleway">
                   Boletín Semanal
@@ -280,7 +285,7 @@ const NoticiasPage = () => {
                   ¿Tienes dudas sobre tu tratamiento o quieres reservar?
                 </p>
                 <a 
-                  href="https://wa.me/51999999999" 
+                  href="https://wa.me/51981009863?text=Hola,%20tengo%20una%20duda%20sobre%20los%20tratamientos%20y%20me%20gustar%C3%ADa%20recibir%20m%C3%A1s%20informaci%C3%B3n,%20por%20favor." 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block text-center w-full bg-[#256b3c] hover:bg-[#1a4a2a] text-white rounded-xl py-3.5 font-bold font-raleway transition-colors shadow-sm"
