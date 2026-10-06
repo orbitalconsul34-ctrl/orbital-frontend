@@ -5,27 +5,11 @@ const ResultadosReales = () => {
   const [activeCase, setActiveCase] = useState(0);
   const [direction, setDirection] = useState('next');
 
-  // Datos corregidos: La paciente M.R. (Mujer) primero, y E.H. (Hombre) segundo
+  // Datos corregidos: La paciente M.R. (Mujer) primero con sus imágenes, 
+  // y E.H. (Hombre) segundo con sus imágenes correspondientes.
   const cases = [
     {
       tag: "CASO 1 - PROGRAMA METABÓLICO DE PESO",
-      name: "Paciente E.H.",
-      details: "47 años · 1.70 m · Endocrinología + Nutrición",
-      stats: [
-        { label: "Peso", value: "98 kg → 79 kg", highlight: "(-19 kg · -19%)" },
-        { label: "IMC", value: "33.9 → 27.3" },
-        { label: "Grasa corporal (InBody)", value: "34% → 24%" },
-        { label: "Masa muscular", value: "Mantenida" },
-        { label: "Duración", value: "24 semanas" }
-      ],
-      causa: "Resistencia a la insulina + prediabetes",
-      tratamiento: "plan nutricional personalizado + tratamiento médico supervisado (análogo de GLP-1 cuando estuvo indicado) + seguimiento con InBody.",
-      quote: `"Había intentado mil dietas. Recién cuando encontraron por qué mi cuerpo no bajaba, todo cambió."`,
-      imgAntes: "/antes-mujer.png",
-      imgDespues: "/despues-mujer.png"
-    },
-    {
-      tag: "CASO 2 - PROGRAMA METABÓLICO DE PESO",
       name: "Paciente M.R.",
       details: "39 años · 1.58 m · Endocrinología + Nutrición",
       stats: [
@@ -38,6 +22,23 @@ const ResultadosReales = () => {
       causa: "Hipotiroidismo subclínico + resistencia a la insulina",
       tratamiento: "manejo de tiroides + plan nutricional + tratamiento médico supervisado (análogo de GLP-1) + seguimiento con InBody.",
       quote: `"Me trataron la tiroides y la insulina, no solo el peso. Por eso esta vez sí se mantuvo."`,
+      imgAntes: "/antes-mujer.png",
+      imgDespues: "/despues-mujer.png"
+    },
+    {
+      tag: "CASO 2 - PROGRAMA METABÓLICO DE PESO",
+      name: "Paciente E.H.",
+      details: "47 años · 1.70 m · Endocrinología + Nutrición",
+      stats: [
+        { label: "Peso", value: "98 kg → 79 kg", highlight: "(-19 kg · -19%)" },
+        { label: "IMC", value: "33.9 → 27.3" },
+        { label: "Grasa corporal (InBody)", value: "34% → 24%" },
+        { label: "Masa muscular", value: "Mantenida" },
+        { label: "Duración", value: "24 semanas" }
+      ],
+      causa: "Resistencia a la insulina + prediabetes",
+      tratamiento: "plan nutricional personalizado + tratamiento médico supervisado (análogo de GLP-1 cuando estuvo indicado) + seguimiento con InBody.",
+      quote: `"Había intentado mil dietas. Recién cuando encontraron por qué mi cuerpo no bajaba, todo cambió."`,
       imgAntes: "/antes-hombre.png",
       imgDespues: "/despues-hombre.png"
     }
@@ -118,7 +119,7 @@ const ResultadosReales = () => {
               className={`flex flex-col lg:flex-row w-full ${direction === 'next' ? 'animate-slide-next' : 'animate-slide-prev'}`}
             >
               
-              {/* Columna Izquierda: Textos (En móvil va abajo: order-2, en PC va a la izquierda: order-1) */}
+              {/* Columna Izquierda: Textos */}
               <div className="order-2 lg:order-1 p-8 lg:p-12 lg:w-[50%] flex flex-col justify-center text-white bg-gradient-to-br from-[#112318] to-[#1a3524]">
                 <span className="font-raleway text-[#4ADE80] text-[10px] font-bold tracking-widest uppercase mb-3 block opacity-90">
                   {currentCase.tag}
@@ -141,7 +142,6 @@ const ResultadosReales = () => {
                   ))}
                 </div>
 
-                {/* NUEVO FONDO CLARO PARA CAUSA DE FONDO DETECTADA */}
                 <div className="bg-[#F9F6F0]/90 p-5 rounded-2xl border border-white/20 mb-6 backdrop-blur-md shadow-lg">
                   <span className="font-raleway text-[10px] font-bold tracking-widest text-[#256b3c] uppercase block mb-2">
                     CAUSA DE FONDO DETECTADA
@@ -160,10 +160,9 @@ const ResultadosReales = () => {
                 </blockquote>
               </div>
 
-              {/* Columna Derecha: Imagen Slider (En móvil va arriba: order-1, en PC va a la derecha: order-2) */}
+              {/* Columna Derecha: Imagen Slider */}
               <div className="order-1 lg:order-2 lg:w-[50%] relative bg-[#EAE6DF] h-[350px] sm:h-[450px] lg:h-auto select-none flex items-center justify-center overflow-hidden">
                 
-                {/* pointer-events-none en las imágenes evita bugs al arrastrar en celulares y PC */}
                 <img 
                   src={currentCase.imgDespues} 
                   alt="Paciente Después" 
