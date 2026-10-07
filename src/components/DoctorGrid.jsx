@@ -43,18 +43,23 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
   const isLoading = propLoading !== undefined ? propLoading : loading;
   const isError = propError || error;
 
-  // PARSER SEGURO PARA CAMPOS JSON (Evita que explote si viene como texto o array)
-  const parseJSONField = (field) => {
+  // PARSER SEGURO PARA CAMPOS JSON (Y ordenamos la formación del más actual al más antiguo)
+  const parseJSONField = (field, reverse = false) => {
     if (!field) return [];
-    if (Array.isArray(field)) return field;
-    try {
-      return JSON.parse(field);
-    } catch {
-      return [];
+    let parsed = [];
+    if (Array.isArray(field)) {
+      parsed = [...field];
+    } else {
+      try {
+        parsed = JSON.parse(field);
+      } catch {
+        parsed = [];
+      }
     }
+    return reverse ? parsed.reverse() : parsed;
   };
 
-  // MAPEÓ AUTOMÁTICO DE LOS DATOS DE LA BASE DE DATOS AL FORMATO DE LA VISTA
+  // MAPEO AUTOMÁTICO DE LOS DATOS
   const dataToRender = equipoParaUsar && equipoParaUsar.length > 0 
     ? equipoParaUsar.map(doc => ({
         id: doc.id,
@@ -63,12 +68,24 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
         imagen: doc.foto_url,
         detalle: {
           tituloCompleto: doc.titulo || doc.especialidad,
-          formacion: parseJSONField(doc.formacion),
+          formacion: parseJSONField(doc.formacion, true), // TRUE para mostrar lo más actual primero
           cursos: parseJSONField(doc.cursos),
           experiencia: parseJSONField(doc.experiencia)
         }
       }))
     : [];
+
+  // ORDEN EXACTO SOLICITADO: Caycho, Zúñiga, Alcázar, Ángeles, Nizama y los demás
+  const ordenDeseado = ["Caycho", "Zúñiga", "Alcázar", "Ángeles", "Nizama"];
+  dataToRender.sort((a, b) => {
+    const indexA = ordenDeseado.findIndex(apellido => a.nombre.includes(apellido));
+    const indexB = ordenDeseado.findIndex(apellido => b.nombre.includes(apellido));
+    
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return 0;
+  });
 
   return (
     <>
@@ -151,33 +168,38 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
 
       </section>
 
-      {/* MODAL (Pop-up con la información real de la BD) */}
+      {/* MODAL (Pop-up 100% responsivo, con padding superior para limpiar el Navbar y botón X integrado abajo/arriba en el header) */}
       {doctorSeleccionado && doctorSeleccionado.detalle && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 font-raleway">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pt-24 sm:pt-28 font-raleway overflow-y-auto">
           <div className="absolute inset-0 bg-[#1e3325]/70 backdrop-blur-sm transition-opacity" onClick={() => setDoctorSeleccionado(null)}></div>
           
-          <div className="relative bg-[#efe8d8] w-full max-w-3xl rounded-3xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all font-raleway">
-            <button 
-              onClick={() => setDoctorSeleccionado(null)}
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-[#1e3325] transition-colors z-10 shadow-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-
-            <div className="overflow-y-auto p-6 sm:p-10 custom-scrollbar">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 mb-10 border-b border-gray-200 pb-8 pr-8">
+          <div className="relative bg-[#efe8d8] w-full max-w-3xl rounded-3xl shadow-2xl max-h-[85vh] flex flex-col overflow-hidden transform transition-all font-raleway my-auto z-10">
+            
+            {/* HEADER DEL MODAL CON BOTÓN DE CIERRE INTEGRADO */}
+            <div className="flex justify-between items-center p-6 sm:px-10 sm:pt-8 pb-4 border-b border-gray-200/60 shrink-0 bg-[#efe8d8]">
+              <div className="flex items-center gap-4 sm:gap-6 pr-4">
                 <img 
                   src={doctorSeleccionado.imagen} 
                   alt={doctorSeleccionado.nombre} 
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover object-top shadow-md shrink-0 bg-white"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top shadow-md shrink-0 bg-white"
                   onError={(e) => { e.target.src = 'https://via.placeholder.com/150/efe8d8/256b3c?text=Foto' }}
                 />
-                <div className="text-center sm:text-left">
-                  <h2 className="text-2xl sm:text-3xl font-raleway font-bold text-[#1e3325] mb-2">{doctorSeleccionado.nombre}</h2>
-                  <p className="text-[#256b3c] text-[13px] sm:text-[14px] font-bold leading-relaxed font-raleway">{doctorSeleccionado.detalle.tituloCompleto}</p>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-raleway font-bold text-[#1e3325] mb-1">{doctorSeleccionado.nombre}</h2>
+                  <p className="text-[#256b3c] text-[12px] sm:text-[13px] font-bold leading-relaxed font-raleway">{doctorSeleccionado.detalle.tituloCompleto}</p>
                 </div>
               </div>
+              <button 
+                onClick={() => setDoctorSeleccionado(null)}
+                className="w-10 h-10 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-[#1e3325] transition-colors shadow-sm shrink-0 border border-gray-200"
+                aria-label="Cerrar modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
 
+            {/* CONTENIDO SCROLLEABLE */}
+            <div className="overflow-y-auto p-6 sm:p-10 custom-scrollbar flex-grow">
               {doctorSeleccionado.detalle.formacion && doctorSeleccionado.detalle.formacion.length > 0 && (
                 <div className="mb-10">
                   <h3 className="text-[#1e3325] text-[16px] font-raleway font-bold mb-6">Formación académica</h3>
@@ -226,6 +248,7 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
                 </div>
               )}
             </div>
+
           </div>
         </div>
       )}
