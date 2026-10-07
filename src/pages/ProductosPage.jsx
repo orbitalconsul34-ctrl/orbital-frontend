@@ -220,7 +220,7 @@ const ProductosPage = () => {
                 </div>
               )}
 
-              {/* === GRID DE PRODUCTOS (IMÁGENES LIMPIAS Y MÁS GRANDES) === */}
+              {/* === GRID DE PRODUCTOS === */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 {!loading && !error && productosProcesados.map((prod) => {
                   const descuento = calcularDescuento(prod.precio, prod.precio_antes);
@@ -235,10 +235,8 @@ const ProductosPage = () => {
                     >
                       <Link to={`/producto/${prod.id}`} className="block relative cursor-pointer flex-grow flex flex-col">
                         
-                        {/* CONTENEDOR DE IMAGEN LIMPIO (Sin fondo, sin sombra, más alto) */}
                         <div className="bg-transparent mb-4 flex justify-center items-center relative h-[200px] md:h-[280px]">
                           
-                          {/* ETIQUETA DE DESCUENTO */}
                           {descuento > 0 && (
                             <div className="absolute top-0 left-0 bg-[#ff4d4f] text-white font-bold px-3 py-1.5 rounded-full text-[12px] z-20 shadow-md">
                               -{descuento}% OFF
@@ -253,7 +251,6 @@ const ProductosPage = () => {
                             </div>
                           )}
 
-                          {/* IMAGEN MÁS GRANDE Y SIN SOMBRA */}
                           <img 
                             src={prod.imagen} 
                             alt={prod.nombre} 
@@ -276,17 +273,13 @@ const ProductosPage = () => {
                       </Link>
 
                       <div className="mt-auto pt-4 border-t border-gray-100">
-                        
-                        {/* CONTENEDOR DE PRECIO */}
                         <div className="mb-4">
                           <div className="flex flex-col">
-                            {/* PRECIO ANTES TACHADO */}
                             {prod.precio_antes && prod.precio_antes > prod.precio && (
                               <span className="text-[13px] md:text-[14px] text-slate-400 line-through font-semibold mb-0.5">
                                 S/ {prod.precio_antes.toFixed(2)}
                               </span>
                             )}
-                            {/* PRECIO ACTUAL EN UNA SOLA LÍNEA */}
                             <span className="font-bold text-[24px] md:text-[28px] text-[#1e3325] font-raleway leading-none whitespace-nowrap">
                               S/ {prod.precio.toFixed(2)}
                             </span>
@@ -305,13 +298,11 @@ const ProductosPage = () => {
                           + Agregar al carrito
                         </button>
                         
-                        {/* ETIQUETA INDICACIÓN DEBAJO DEL BOTÓN */}
                         <div className="text-center">
                           <span className="text-[#8a9096] text-[10px] md:text-[11px] font-bold font-raleway uppercase tracking-wider">
                             {prod.indicacion || 'Venta libre'}
                           </span>
                         </div>
-
                       </div>
                     </div>
                   );
@@ -328,11 +319,15 @@ const ProductosPage = () => {
           </p>
         </div>
 
-        <section className="py-12 border-t border-black/5 bg-white overflow-hidden flex flex-col items-center">
+        {/* =========================================================================
+            NUESTROS ALIADOS ESTRATÉGICOS (Misma magia del Home, sin huecos blancos)
+            ========================================================================= */}
+        <section className="py-12 border-t border-black/5 bg-white overflow-hidden flex flex-col items-center relative z-10">
           <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
             Nuestros aliados estratégicos
           </h3>
-          <div className="carousel-container relative w-full flex overflow-hidden z-10 mb-4">
+          
+          <div className="carousel-container relative w-full overflow-hidden flex z-10 mb-4">
             <style>
               {`
                 @keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
@@ -342,21 +337,39 @@ const ProductosPage = () => {
                 .animate-slide-up-modal { animation: slideUpModal 0.3s ease-out forwards; }
               `}
             </style>
-            <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
-              {aliados.map((logo, index) => (
-                <img key={`logo-1-${index}`} src={`/${logo}`} alt="Aliado" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105" />
+            
+            {/* PISTA 1: w-max evita que deje huecos, pr-8/16 crea el puente exacto hacia la pista 2 */}
+            <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
+              {[...aliados, ...aliados].map((logo, index) => (
+                <img 
+                  key={`logo-1-${index}`} 
+                  src={`/${logo}`} 
+                  alt={`Aliado ${index}`} 
+                  className="h-10 md:h-12 w-auto max-w-none object-contain transition-transform duration-300 hover:scale-105"
+                />
               ))}
             </div>
-            <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
-              {aliados.map((logo, index) => (
-                <img key={`logo-2-${index}`} src={`/${logo}`} alt="Aliado" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105" />
+
+            {/* PISTA 2: El clon exacto que persigue a la Pista 1 */}
+            <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
+              {[...aliados, ...aliados].map((logo, index) => (
+                <img 
+                  key={`logo-2-${index}`} 
+                  src={`/${logo}`} 
+                  alt={`Aliado clon ${index}`} 
+                  className="h-10 md:h-12 w-auto max-w-none object-contain transition-transform duration-300 hover:scale-105"
+                />
               ))}
             </div>
+
           </div>
         </section>
+        {/* ========================================================================= */}
+
       </div>
       <Footer />
 
+      {/* MENÚ MÓVIL (BOTTOM SHEET) */}
       <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-[60] flex justify-around items-center px-2 py-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe">
         <button onClick={() => setBottomSheetActivo('categoria')} className={`flex flex-col items-center gap-1 w-1/3 transition-colors font-raleway ${bottomSheetActivo === 'categoria' || categoriasActivas.length > 0 ? 'text-[#256b3c]' : 'text-[#8a9096]'}`}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" /></svg>

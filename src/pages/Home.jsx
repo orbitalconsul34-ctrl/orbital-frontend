@@ -95,70 +95,55 @@ const Home = () => {
 
         {/* Sección de Aliados Estratégicos */}
         <section className="pt-12 pb-20 md:pb-28 bg-white overflow-hidden flex flex-col items-center relative z-10">
-  <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
-    Nuestros aliados estratégicos
-  </h3>
-  
-  <div className="carousel-container relative w-full flex overflow-hidden z-10 mb-4">
-    {/* Contenedor 1: min-w-full y justify-around hacen que ocupe todo el ancho y no deje huecos */}
-    <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
-      {aliados.map((logo, index) => (
-        <img 
-          key={`logo-1-${index}`} 
-          src={`/${logo}`} 
-          alt={`Logo Aliado ${index}`} 
-          className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
-        />
-      ))}
-    </div>
+          <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
+            Nuestros aliados estratégicos
+          </h3>
+          
+          <div className="carousel-container relative w-full overflow-hidden flex z-10 mb-4">
+            
+            {/* PISTA 1: w-max evita que deje huecos, pr-8/16 crea el puente exacto hacia la pista 2 */}
+            <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
+              {/* Duplicamos los aliados aquí adentro para garantizar que llene monitores 4K sin romperse */}
+              {[...aliados, ...aliados].map((logo, index) => (
+                <img 
+                  key={`logo-1-${index}`} 
+                  src={`/${logo}`} 
+                  alt={`Aliado ${index}`} 
+                  className="h-10 md:h-12 w-auto max-w-none object-contain transition-transform duration-300 hover:scale-105"
+                />
+              ))}
+            </div>
 
-    {/* Contenedor 2: El duplicado exacto para el efecto infinito */}
-    <div className="flex animate-slide whitespace-nowrap items-center shrink-0 min-w-full justify-around px-4">
-      {aliados.map((logo, index) => (
-        <img 
-          key={`logo-2-${index}`} 
-          src={`/${logo}`} 
-          alt={`Logo Aliado duplicado ${index}`} 
-          className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
-        />
-      ))}
-    </div>
-  </div>
+            {/* PISTA 2: El clon exacto que persigue a la Pista 1 */}
+            <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
+              {[...aliados, ...aliados].map((logo, index) => (
+                <img 
+                  key={`logo-2-${index}`} 
+                  src={`/${logo}`} 
+                  alt={`Aliado clon ${index}`} 
+                  className="h-10 md:h-12 w-auto max-w-none object-contain transition-transform duration-300 hover:scale-105"
+                />
+              ))}
+            </div>
 
-  {/* =========================================
-      ONDA INFERIOR (Volteada)
-      ========================================= */}
-  <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-0">
-    <svg 
-      viewBox="0 0 1440 80" 
-      preserveAspectRatio="none" 
-      className="w-full h-[40px] md:h-[70px] block -scale-y-100"
-    >
-      {/* Fondo de transición: cambia el fill="#f8f9fa" al color exacto de tu siguiente sección si es diferente */}
-      <path 
-        d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" 
-        fill="#FFFFFF"
-      />
-      {/* Línea Verde Oscura */}
-      <path 
-        d="M0,50 C400,10 1000,80 1440,40" 
-        fill="none" 
-        stroke="#5c6e4e" 
-        strokeWidth="10" 
-        opacity="0.9"
-      />
-      {/* Línea Verde Clara */}
-      <path 
-        d="M0,40 C450,80 950,20 1440,50" 
-        fill="none" 
-        stroke="#8b9a7b" 
-        strokeWidth="5" 
-        opacity="0.9"
-      />
-    </svg>
-  </div>
-  
-</section>
+          </div>
+
+          {/* =========================================
+              ONDA INFERIOR (Volteada)
+              ========================================= */}
+          <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-0">
+            <svg 
+              viewBox="0 0 1440 80" 
+              preserveAspectRatio="none" 
+              className="w-full h-[40px] md:h-[70px] block -scale-y-100"
+            >
+              <path d="M0,0 L1440,0 L1440,40 C1000,80 400,10 0,50 Z" fill="#FFFFFF" />
+              <path d="M0,50 C400,10 1000,80 1440,40" fill="none" stroke="#5c6e4e" strokeWidth="10" opacity="0.9" />
+              <path d="M0,40 C450,80 950,20 1440,50" fill="none" stroke="#8b9a7b" strokeWidth="5" opacity="0.9" />
+            </svg>
+          </div>
+          
+        </section>
 
         {/* Sección de Preguntas Frecuentes (Acordeón) */}
         <FAQ />
