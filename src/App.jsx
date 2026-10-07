@@ -5,8 +5,14 @@ import Home from './pages/Home';
 import NosotrosPage from './pages/NosotrosPage'; 
 import EquipoPage from './pages/EquipoPage';
 import NoticiasPage from './pages/NoticiasPage'; 
-import NoticiaDetalle from './pages/NoticiaDetalle'; // <--- IMPORTAMOS LA NUEVA PÁGINA DE DETALLE
-import ContactoPage from './pages/ContactoPage';
+import NoticiaDetalle from './pages/NoticiaDetalle'; 
+
+// === IMPORTAMOS LAS NUEVAS PÁGINAS DE AYUDA Y LEGALES ===
+import ContactoFAQ from './pages/ContactoPage';
+import PoliticasCitas from './pages/PoliticasCitas';
+import TerminosCondiciones from './pages/TerminosCondiciones';
+import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
+
 import ReservarCitaPage from './pages/ReservarCitaPage'; 
 import ProductosPage from './pages/ProductosPage'; 
 import ProductoDetalle from './pages/ProductoDetalle'; 
@@ -48,9 +54,14 @@ function AppContent() {
           <Route path="/equipo" element={<EquipoPage />} />
           
           <Route path="/noticias" element={<NoticiasPage />} /> 
-          <Route path="/noticias/:id" element={<NoticiaDetalle />} /> {/* <--- NUEVA RUTA AGREGADA PARA EL DETALLE */}
+          <Route path="/noticias/:id" element={<NoticiaDetalle />} /> 
           
-          <Route path="/contacto" element={<ContactoPage />} /> 
+          {/* --- RUTAS NUEVAS DE CONTACTO Y POLÍTICAS --- */}
+          <Route path="/contacto" element={<ContactoFAQ />} /> 
+          <Route path="/politicas-citas" element={<PoliticasCitas />} /> 
+          <Route path="/terminos-condiciones" element={<TerminosCondiciones />} /> 
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} /> 
+          
           <Route path="/reservar-cita" element={<ReservarCitaPage />} /> 
           <Route path="/productos" element={<ProductosPage />} /> 
           <Route path="/producto/:id" element={<ProductoDetalle />} /> 
@@ -60,6 +71,7 @@ function AppContent() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </main>
+
       
     </div>
   );

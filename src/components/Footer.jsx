@@ -19,8 +19,8 @@ const Footer = () => {
 
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 relative z-10">
         
-        {/* === GRID PRINCIPAL (3 Columnas) === */}
-        <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-12 lg:gap-16 pb-14 border-b border-[#6B7C5A]/40">
+        {/* === GRID PRINCIPAL (4 Columnas) === */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.2fr_1.2fr] gap-12 lg:gap-10 pb-14 border-b border-[#6B7C5A]/40">
           
           {/* Columna 1: Logo y Descripción */}
           <div className="flex flex-col items-start">
@@ -28,46 +28,87 @@ const Footer = () => {
               <img 
                 src="/logo.png" 
                 alt="Orbital Salud" 
-                /* brightness-0 invert convierte el logo a blanco puro para que resalte en el fondo oscuro */
                 className="h-[48px] w-auto object-contain mb-6 brightness-0 invert opacity-90 transition-opacity hover:opacity-100" 
               />
             </Link>
-            <p className="text-[#A3B18A] text-[14.5px] leading-relaxed max-w-[320px] font-raleway font-medium">
-              Centro de metabolismo y obesidad.<br className="hidden md:block" />
+            <p className="text-[#A3B18A] text-[14.5px] leading-relaxed max-w-[280px] font-raleway font-medium">
+              Centro de metabolismo y obesidad.<br className="hidden lg:block" />
               Bajamos de peso tratando la causa metabólica y hormonal, no solo la balanza — para adultos y niños. 
             </p>
           </div>
 
-          {/* Columna 2: Enlaces */}
+          {/* Columna 2: Menú Principal */}
           <div>
             <h5 className="text-white font-raleway text-[16px] font-bold mb-6 tracking-widest uppercase">
-              Enlaces
+              Menú Principal
             </h5>
             <ul className="flex flex-col gap-4 text-[14.5px] font-raleway font-medium">
               <li>
-                <Link to="/especialidades" className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
-                  Especialidades
+                <Link to="/" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Inicio
                 </Link>
               </li>
               <li>
-                <Link to="/equipo" className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                <Link to="/nosotros" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Nosotros
+                </Link>
+              </li>
+              <li>
+                <Link to="/equipo" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
                   Equipo
                 </Link>
               </li>
               <li>
-                <Link to="/productos" className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                <Link to="/noticias" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Noticias
+                </Link>
+              </li>
+              <li>
+                <Link to="/productos" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
                   Tienda
                 </Link>
               </li>
               <li>
-                <Link to="/contacto" className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
-                  Preguntas frecuentes
+                <Link to="/login" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  Portal
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Columna 3: Contacto */}
+          {/* Columna 3: Legal y Ayuda */}
+          <div>
+            <h5 className="text-white font-raleway text-[16px] font-bold mb-6 tracking-widest uppercase">
+              Atención al Paciente
+            </h5>
+            <ul className="flex flex-col gap-4 text-[14.5px] font-raleway font-medium">
+              <li>
+                <Link to="/contacto" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Contacto y FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/politicas-citas" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Políticas de citas
+                </Link>
+              </li>
+              <li>
+                <Link to="/terminos-condiciones" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Términos y condiciones
+                </Link>
+              </li>
+              <li>
+                <Link to="/politica-privacidad" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
+                  Política de privacidad
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Columna 4: Contacto */}
           <div>
             <h5 className="text-white font-raleway text-[16px] font-bold mb-6 tracking-widest uppercase">
               Contacto
@@ -76,7 +117,9 @@ const Footer = () => {
               
               <li className="flex items-start gap-3 group">
                 <svg className="w-5 h-5 text-[#A3B18A] shrink-0 mt-0.5 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                <span className="font-medium">WhatsApp: 981 009 863</span>
+                <a href="https://wa.me/51981009863" target="_blank" rel="noreferrer" className="font-medium hover:text-[#A3B18A] transition-colors">
+                  WhatsApp: 981 009 863
+                </a>
               </li>
               
               <li className="flex items-start gap-3 group">
@@ -106,7 +149,7 @@ const Footer = () => {
             <span className="text-[#6B7C5A]">•</span>
             <a href="#" className="hover:text-[#A3B18A] transition-colors">TikTok</a>
             <span className="text-[#6B7C5A]">•</span>
-            <a href="#" className="hover:text-[#A3B18A] transition-colors">WhatsApp</a>
+            <a href="https://wa.me/51981009863" target="_blank" rel="noreferrer" className="hover:text-[#A3B18A] transition-colors">WhatsApp</a>
           </div>
         </div>
 

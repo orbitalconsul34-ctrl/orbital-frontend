@@ -100,7 +100,10 @@ export default function ReservarCitaPage() {
   const [doctores, setDoctores] = useState([]);
   const [cargandoDocs, setCargandoDocs] = useState(true);
   const [especialidad, setEspecialidad] = useState('Todas');
+  
   const [doctor, setDoctor] = useState(null);
+  const [modalidad, setModalidad] = useState('PRESENCIAL');
+  
   const [mes, setMes] = useState({ y: hoy.getFullYear(), m: hoy.getMonth() });
   const [disp, setDisp] = useState(null);
   const [cargandoDisp, setCargandoDisp] = useState(false);
@@ -171,7 +174,7 @@ export default function ReservarCitaPage() {
   const reservarHorario = async () => {
     setEnviando(true); setError('');
     try {
-      const r = await post('/citas/reservar', { id_doctor: doctor.id, fecha: dia, hora });
+      const r = await post('/citas/reservar', { id_doctor: doctor.id, fecha: dia, hora, modalidad });
       setReserva({ id: r.id, token: r.token, finMs: Date.now() + r.segundos_restantes * 1000 });
       setPaso(3);
     } catch (e) {
@@ -202,8 +205,10 @@ export default function ReservarCitaPage() {
     if (!CULQI_PK) { setError('Falta configurar VITE_CULQI_PUBLIC_KEY en el frontend.'); return; }
     try { await cargarCulqi(); } catch (e) { setError(e.message); return; }
 
+    const precioACobrar = modalidad === 'VIRTUAL' ? doctor.precio_virtual : doctor.precio;
+
     const checkout = new window.CulqiCheckout(CULQI_PK, {
-      settings: { title: 'Orbital Salud', currency: 'PEN', amount: Math.round(Number(doctor.precio) * 100) },
+      settings: { title: 'Orbital Salud', currency: 'PEN', amount: Math.round(Number(precioACobrar) * 100) },
       client: { email: form.correo },
       options: {
         lang: 'es',
@@ -215,7 +220,7 @@ export default function ReservarCitaPage() {
       appearance: {
         theme: 'default',
         hiddenCulqiLogo: false,
-        buttonCardPayText: `Pagar ${soles(doctor.precio)}`,
+        buttonCardPayText: `Pagar ${soles(precioACobrar)}`,
         defaultStyle: {
           bannerColor: '#2E4B34',
           buttonBackground: '#2E4B34',
@@ -238,8 +243,7 @@ export default function ReservarCitaPage() {
   };
 
   const setCampo = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const datosOk = /^\d{8}$/.test(form.dni) && form.nombre_completo.trim().length > 3
-    && form.telefono.replace(/\D/g, '').length >= 9 && /^\S+@\S+\.\S+$/.test(form.correo) && form.acepta;
+  const datosOk = /^\d{8}$/.test(form.dni) && form.nombre_completo.trim().length > 3     && form.telefono.replace(/\D/g, '').length >= 9 && /^\S+@\S+\.\S+$/.test(form.correo) && form.acepta;
 
   // ---------- Datos derivados ----------
   const especialidades = ['Todas', ...new Set(doctores.map((d) => d.especialidad).filter(Boolean))];
@@ -297,15 +301,35 @@ export default function ReservarCitaPage() {
                     {!cargandoDocs && lista.length === 0 && <p className="text-sm text-os-ink-soft">Aún no hay especialistas disponibles en esta categoría.</p>}
                     <div className="grid sm:grid-cols-2 gap-4">
                       {lista.map((d) => (
-                        <button key={d.id} onClick={() => elegirDoctor(d)}
-                          className="flex gap-4 text-left rounded-2xl border border-os-light/50 p-4 hover:border-os-dark hover:shadow-md transition">
-                          <Foto d={d} />
-                          <span className="min-w-0">
-                            <span className="block font-serif font-semibold text-os-dark leading-snug">{d.nombres}</span>
-                            <span className="block text-xs text-os-ink-soft mt-1 line-clamp-2">{d.titulo || d.especialidad}</span>
-                            <span className="block text-sm font-bold text-os-accent mt-2">{soles(d.precio)} · {d.duracion_min} min</span>
-                          </span>
-                        </button>
+                        <div key={d.id} className="flex flex-col gap-4 text-left rounded-2xl border border-os-light/50 p-4 hover:border-os-dark hover:shadow-md transition">
+                          <div className="flex gap-4">
+                            <Foto d={d} />
+                            <span className="min-w-0">
+                              <span className="block font-serif font-semibold text-os-dark leading-snug">{d.nombres}</span>
+                              <span className="block text-xs text-os-ink-soft mt-1 line-clamp-2">{d.titulo || d.especialidad}</span>
+                            </span>
+                          </div>
+                          
+                          {/* Selector de Modalidad */}
+                          <div className="mt-2 flex gap-2">
+                            <div 
+                              onClick={(e) => { e.stopPropagation(); setModalidad('PRESENCIAL'); elegirDoctor(d); }}
+                              className="flex-1 text-center bg-os-beige/50 border border-os-light hover:border-os-dark rounded-xl p-2 cursor-pointer transition"
+                            >
+                              <span className="block text-[10px] font-bold text-os-ink-soft uppercase tracking-wider mb-0.5">Consultorio</span>
+                              <span className="block text-sm font-bold text-os-dark">{soles(d.precio)}</span>
+                            </div>
+                            
+                            <div 
+                              onClick={(e) => { e.stopPropagation(); setModalidad('VIRTUAL'); elegirDoctor(d); }}
+                              className="flex-1 text-center bg-purple-50/50 border border-purple-200 hover:border-purple-400 rounded-xl p-2 cursor-pointer transition"
+                            >
+                              <span className="block text-[10px] font-bold text-purple-600 uppercase tracking-wider mb-0.5">Videollamada</span>
+                              <span className="block text-sm font-bold text-purple-900">{soles(d.precio_virtual)}</span>
+                            </div>
+                          </div>
+                          <span className="block text-xs text-os-ink-soft text-center mt-1">Duración: {d.duracion_min} min</span>
+                        </div>
                       ))}
                     </div>
                   </>
@@ -408,7 +432,7 @@ export default function ReservarCitaPage() {
                     <div className="rounded-2xl bg-os-beige/60 border border-os-light/40 p-6 mb-6">
                       <p className="text-sm text-os-ink-soft">Consulta con {doctor.nombres}</p>
                       <p className="text-sm text-os-ink-soft first-letter:uppercase">{fmtFecha(dia)} · {hora12(hora)}</p>
-                      <p className="font-serif text-4xl font-semibold text-os-dark mt-3">{soles(doctor.precio)}</p>
+                      <p className="font-serif text-4xl font-semibold text-os-dark mt-3">{soles(modalidad === 'VIRTUAL' ? doctor.precio_virtual : doctor.precio)}</p>
                     </div>
                     <p className="text-sm text-os-ink-soft leading-relaxed mb-6">
                       El pago lo procesa Culqi en una ventana segura: nosotros nunca vemos los datos de tu tarjeta.
@@ -421,7 +445,7 @@ export default function ReservarCitaPage() {
                     <div className="flex justify-between">
                       <button className={BTN_2} onClick={() => irAPaso(3)}>Volver a mis datos</button>
                       <button className={BTN} disabled={enviando} onClick={pagar}>
-                        {enviando ? 'Procesando pago…' : `Pagar ${soles(doctor.precio)}`}
+                        {enviando ? 'Procesando pago…' : `Pagar ${soles(modalidad === 'VIRTUAL' ? doctor.precio_virtual : doctor.precio)}`}
                       </button>
                     </div>
                   </>
@@ -463,7 +487,14 @@ export default function ReservarCitaPage() {
 
             <div className="mt-6 pt-6 border-t border-white/15">
               <p className="text-xs text-os-light mb-1">Monto de la consulta</p>
-              <p className="font-serif text-4xl font-semibold">{doctor ? soles(doctor.precio) : '—'}</p>
+              <p className="font-serif text-4xl font-semibold">
+                {doctor ? soles(modalidad === 'VIRTUAL' ? doctor.precio_virtual : doctor.precio) : '—'}
+              </p>
+              {doctor && (
+                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold ${modalidad === 'VIRTUAL' ? 'bg-purple-100 text-purple-700' : 'bg-os-beige text-os-dark'}`}>
+                  Modalidad: {modalidad}
+                </span>
+              )}
             </div>
           </aside>
         </div>

@@ -34,7 +34,7 @@ export default function PanelDoctores() {
 
   const initialState = {
     nombres: '', especialidad: '', titulo: '', correo_corporativo: '',
-    foto_url: '', precio: '', duracion_min: '20', google_calendar_id: '', activo: true,
+    foto_url: '', precio: '', precio_virtual: '', duracion_min: '20', google_calendar_id: '', activo: true,
     formacion: [], 
     cursos: [],    
     experiencia: [] 
@@ -62,7 +62,6 @@ export default function PanelDoctores() {
 
   const fetchAllCitas = async () => {
     try {
-      // Traemos todas las citas aprobadas para tenerlas listas
       const response = await fetch(`${API_CITAS}?estado=APROBADO`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }});
       if (response.ok) setTodasLasCitas(await response.json());
     } catch (error) { console.error('Error fetching citas:', error); }
@@ -145,16 +144,31 @@ export default function PanelDoctores() {
     try {
       const method = editingId ? 'PUT' : 'POST';
       const url = editingId ? `${API_URL}/${editingId}` : API_URL;
+      
+      // FORMATEAMOS A NÚMEROS LIMPIOS PARA QUE NO DE ERROR 500 AL GUARDAR
+      const precioBase = parseFloat(formData.precio) || 0;
+      const precioVirtualBase = formData.precio_virtual ? parseFloat(formData.precio_virtual) : precioBase;
+
+      const payload = { 
+        ...formData, 
+        activo: formData.activo ? 1 : 0,
+        precio: precioBase,
+        precio_virtual: precioVirtualBase
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
-        body: JSON.stringify({ ...formData, activo: formData.activo ? 1 : 0 })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         cancelarEdicion();
         fetchDoctores();
+      } else {
+        const err = await res.json();
+        alert(`Error al guardar: ${err.error || 'Problema en el servidor'}`);
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { console.error(error); alert('Error de conexión'); }
   };
 
   const handleEditar = (doc) => {
@@ -306,14 +320,18 @@ export default function PanelDoctores() {
             <div className="md:col-span-4 bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
               <h3 className="md:col-span-3 font-bold text-slate-700 border-b pb-2 mb-2">2. Reservas y Fotografía</h3>
               <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Precio Consulta (S/)</label>
-                <input type="number" step="0.01" name="precio" required value={formData.precio} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400 font-bold" />
+                <label className="block text-xs font-bold text-slate-500 mb-1">Precio Presencial (S/)</label>
+                <input type="number" step="0.01" name="precio" required value={formData.precio} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400 font-bold text-slate-700" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Precio Virtual (S/)</label>
+                <input type="number" step="0.01" name="precio_virtual" required value={formData.precio_virtual} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-purple-400 font-bold text-purple-700 bg-purple-50" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Duración Cita (Min)</label>
                 <input type="number" name="duracion_min" required value={formData.duracion_min} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" />
               </div>
-              <div>
+              <div className="md:col-span-3">
                 <label className="block text-xs font-bold text-slate-500 mb-1">Google Calendar ID</label>
                 <input type="email" name="google_calendar_id" value={formData.google_calendar_id} onChange={handleInputChange} className="border p-2.5 rounded-lg w-full outline-none focus:border-sky-400" placeholder="Privado" />
               </div>
@@ -417,7 +435,7 @@ export default function PanelDoctores() {
               <tr>
                 <th className="p-4">Doctor y Título</th>
                 <th className="p-4">Especialidad</th>
-                <th className="p-4">Consulta</th>
+                <th className="p-4">Consultas (Pre/Vir)</th>
                 <th className="p-4 text-center">Gestión y Herramientas</th>
               </tr>
             </thead>
@@ -449,7 +467,9 @@ export default function PanelDoctores() {
                       </td>
                       <td className="p-4 text-sm font-medium text-slate-600">{doc.especialidad}</td>
                       <td className="p-4 font-bold text-slate-700">
-                        S/ {doc.precio} <span className="text-xs text-slate-400 font-normal block">{doc.duracion_min} min</span>
+                        <div className="text-sm">S/ {doc.precio} <span className="text-xs font-normal text-slate-400"> (Pres)</span></div>
+                        <div className="text-sm text-purple-700">S/ {doc.precio_virtual} <span className="text-xs font-normal text-purple-400"> (Virt)</span></div>
+                        <span className="text-xs text-slate-400 font-normal block mt-1">{doc.duracion_min} min</span>
                       </td>
                       <td className="p-4">
                         <div className="flex justify-center gap-2">
@@ -487,6 +507,9 @@ export default function PanelDoctores() {
                                     
                                     <div className="text-sm font-bold text-emerald-600 bg-emerald-50 py-1.5 px-3 rounded-lg mb-3 inline-block">
                                       {cita.fecha} — {cita.hora}
+                                    </div>
+                                    <div className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider inline-block ml-2 ${cita.modalidad === 'VIRTUAL' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'}`}>
+                                      {cita.modalidad || 'PRESENCIAL'}
                                     </div>
 
                                     {citaEditando === cita.id ? (
