@@ -235,7 +235,8 @@ const ProductosPage = () => {
                     >
                       <Link to={`/producto/${prod.id}`} className="block relative cursor-pointer flex-grow flex flex-col">
                         
-                        <div className="bg-transparent mb-4 flex justify-center items-center relative h-[200px] md:h-[280px]">
+                        {/* IMAGEN MÁS CERCA: scale-[1.4] de base y scale-[1.6] en hover */}
+                        <div className="bg-transparent mb-4 flex justify-center items-center relative h-[180px] md:h-[240px] overflow-hidden rounded-xl">
                           
                           {descuento > 0 && (
                             <div className="absolute top-0 left-0 bg-[#ff4d4f] text-white font-bold px-3 py-1.5 rounded-full text-[12px] z-20 shadow-md">
@@ -254,11 +255,12 @@ const ProductosPage = () => {
                           <img 
                             src={prod.imagen} 
                             alt={prod.nombre} 
-                            className={`h-full w-full object-contain transition-transform duration-500 ${prod.stock > 0 ? 'group-hover/card:scale-105' : 'opacity-60'}`}
+                            className={`h-full w-full object-contain scale-[1.4] transition-transform duration-500 ${prod.stock > 0 ? 'group-hover/card:scale-[1.6]' : 'opacity-60'}`}
                             onError={(e) => { e.target.src = "https://via.placeholder.com/200x200/FFFFFF/2E4B34?text=Sin+Imagen" }}
                           />
                         </div>
 
+                        {/* TÍTULO, CATEGORÍA Y DESCRIPCIÓN */}
                         <div className="flex-grow flex flex-col">
                           <h3 className="font-bold text-[#1e3325] text-[16px] md:text-[19px] leading-tight mb-1.5 font-raleway group-hover/card:text-[#256b3c] transition-colors">
                             {prod.nombre}
@@ -320,7 +322,7 @@ const ProductosPage = () => {
         </div>
 
         {/* =========================================================================
-            NUESTROS ALIADOS ESTRATÉGICOS (Misma magia del Home, sin huecos blancos)
+            NUESTROS ALIADOS ESTRATÉGICOS
             ========================================================================= */}
         <section className="py-12 border-t border-black/5 bg-white overflow-hidden flex flex-col items-center relative z-10">
           <h3 className="text-[#8a9096] font-bold text-[12px] tracking-[0.2em] uppercase mb-10 font-sans text-center relative z-10">
@@ -338,7 +340,6 @@ const ProductosPage = () => {
               `}
             </style>
             
-            {/* PISTA 1: w-max evita que deje huecos, pr-8/16 crea el puente exacto hacia la pista 2 */}
             <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
               {[...aliados, ...aliados].map((logo, index) => (
                 <img 
@@ -350,7 +351,6 @@ const ProductosPage = () => {
               ))}
             </div>
 
-            {/* PISTA 2: El clon exacto que persigue a la Pista 1 */}
             <div className="flex animate-slide items-center shrink-0 w-max gap-8 md:gap-16 pr-8 md:pr-16">
               {[...aliados, ...aliados].map((logo, index) => (
                 <img 

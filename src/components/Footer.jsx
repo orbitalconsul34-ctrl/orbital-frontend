@@ -86,11 +86,6 @@ const Footer = () => {
             </h5>
             <ul className="flex flex-col gap-4 text-[14.5px] font-raleway font-medium">
               <li>
-                <Link to="/contacto" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
-                  Contacto y FAQ
-                </Link>
-              </li>
-              <li>
                 <Link to="/politicas-citas" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-block">
                   Políticas de citas
                 </Link>
