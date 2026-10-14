@@ -315,12 +315,6 @@ const ProductosPage = () => {
           </div>
         </main>
 
-        <div className="text-center max-w-4xl mx-auto mb-16 px-6">
-          <p className="text-[#8a9096] text-[12px] md:text-[13px] font-medium leading-relaxed font-raleway bg-[#F9F6F0] p-4 rounded-2xl border border-black/5">
-            También contamos con Basestar (Vitamina D 25,000 y 50,000 UI), Myo Inositol/D-Chiro y Vitamina B12 — consulta disponibilidad con tu médico antes de agregarlos a tu pedido.
-          </p>
-        </div>
-
         {/* =========================================================================
             NUESTROS ALIADOS ESTRATÉGICOS
             ========================================================================= */}

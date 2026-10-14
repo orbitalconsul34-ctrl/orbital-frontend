@@ -68,14 +68,6 @@ const Footer = () => {
                   Tienda
                 </Link>
               </li>
-              <li>
-                <Link to="/login" onClick={() => window.scrollTo(0,0)} className="text-[#F1F2F3] hover:text-[#A3B18A] hover:translate-x-1.5 transition-all duration-300 inline-flex items-center gap-1.5">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                  Portal
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -138,11 +130,11 @@ const Footer = () => {
             © {new Date().getFullYear()} Orbital Salud. Todos los derechos reservados.
           </p>
           
-          {/* Enlaces de Redes en línea */}
+          {/* Enlaces de Redes en línea con LINKS REALES */}
           <div className="flex gap-4 items-center font-bold text-[#F1F2F3]">
-            <a href="#" className="hover:text-[#A3B18A] transition-colors">Instagram</a>
+            <a href="https://www.instagram.com/orbitalsalud?mdxt=MWhnNHd6c3kzYTVvYw%3D%3D" target="_blank" rel="noreferrer" className="hover:text-[#A3B18A] transition-colors">Instagram</a>
             <span className="text-[#6B7C5A]">•</span>
-            <a href="#" className="hover:text-[#A3B18A] transition-colors">TikTok</a>
+            <a href="https://www.tiktok.com/@angelicacaycho.endocrino?_r=1&_t=ZS-9AYPuH3Vvym" target="_blank" rel="noreferrer" className="hover:text-[#A3B18A] transition-colors">TikTok</a>
             <span className="text-[#6B7C5A]">•</span>
             <a href="https://wa.me/51981009863" target="_blank" rel="noreferrer" className="hover:text-[#A3B18A] transition-colors">WhatsApp</a>
           </div>

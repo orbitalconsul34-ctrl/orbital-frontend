@@ -75,7 +75,7 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
       }))
     : [];
 
-  // ORDEN EXACTO SOLICITADO: Caycho, Zúñiga, Alcázar, Ángeles, Nizama y los demás
+  // ORDEN EXACTO SOLICITADO
   const ordenDeseado = ["Caycho", "Zúñiga", "Alcázar", "Ángeles", "Nizama"];
   dataToRender.sort((a, b) => {
     const indexA = ordenDeseado.findIndex(apellido => a.nombre.includes(apellido));
@@ -117,12 +117,17 @@ const DoctorGrid = ({ equipoData: propEquipoData, loading: propLoading, error: p
           {isLoading && <p className="text-center text-[#6b7280] mb-8 font-raleway">Cargando equipo médico...</p>}
           {isError && <p className="text-center text-red-500 mb-8 font-raleway">{isError}</p>}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 md:gap-4 lg:gap-5">
+          {/* 
+            MAGIA DE CENTRADO AQUÍ: 
+            Se cambió 'grid' por 'flex flex-wrap justify-center'. 
+            Las tarjetas (hijos) tienen un ancho responsivo fijo usando calc y w-full.
+          */}
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-4 lg:gap-5">
             {dataToRender.map((doc) => (
               <div 
                 key={doc.id} 
                 onClick={() => setDoctorSeleccionado(doc)}
-                className="bg-white rounded-2xl md:rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-black/5 group flex flex-col cursor-pointer"
+                className="w-[calc(50%-0.375rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(14.28%-0.85rem)] min-w-[140px] max-w-[200px] bg-white rounded-2xl md:rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-black/5 group flex flex-col cursor-pointer"
               >
                 <div className="relative w-full aspect-[4/5] overflow-hidden bg-[#f4f5f3]">
                    <img 
