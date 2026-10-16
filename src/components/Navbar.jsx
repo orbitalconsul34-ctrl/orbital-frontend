@@ -20,6 +20,18 @@ const Navbar = () => {
     }
   }, [location]);
 
+  const handleHashClick = (e, id, targetPath) => {
+    setIsOpen(false);
+    if (location.pathname === targetPath) {
+      e.preventDefault(); 
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.history.pushState(null, '', `${targetPath}#${id}`);
+      }
+    }
+  };
+
   const closeMenu = () => setIsOpen(false);
 
   // === FUNCIÓN PARA DETERMINAR EL COLOR DEL ENLACE ACTIVO ===
@@ -76,15 +88,18 @@ const Navbar = () => {
               Contacto
             </Link>
             
-            {/* Botón de Reserva Directo a WhatsApp */}
-            <a 
-              href="https://wa.me/51981009863" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="bg-[#256b3c] hover:bg-[#1e542f] text-white px-6 py-[11px] rounded-full text-[14px] font-bold transition-all shadow-md hover:shadow-lg font-raleway whitespace-nowrap shrink-0 ml-1"
-            >
+            {/* PORTAL */}
+            <Link to="/login" className="flex items-center text-[14.5px] font-raleway whitespace-nowrap transition-colors text-[#256b3c] font-bold hover:text-[#1e542f]">
+              <svg className="w-[18px] h-[18px] mr-1.5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Portal
+            </Link>
+            
+            {/* Botón de Reserva */}
+            <Link to="/reservar-cita" className="bg-[#256b3c] hover:bg-[#1e542f] text-white px-6 py-[11px] rounded-full text-[14px] font-bold transition-all shadow-md hover:shadow-lg font-raleway whitespace-nowrap shrink-0 ml-1">
               Agendar evaluación
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -108,22 +123,27 @@ const Navbar = () => {
         {isOpen && (
           <div className="lg:hidden flex flex-col gap-4 pt-4 pb-4 border-t border-black/5 mt-3 animate-fadeIn">
             <Link to="/" onClick={() => { closeMenu(); window.scrollTo(0,0); }} className={getMobileLinkClass('/', '')}>Inicio</Link>
+            
+            {/* CORRECCIÓN: Actualizado a /nosotros en la versión móvil */}
             <Link to="/nosotros" onClick={closeMenu} className={getMobileLinkClass('/nosotros', '')}>Nosotros</Link>
+            
             <Link to="/equipo" onClick={closeMenu} className={getMobileLinkClass('/equipo', '')}>Equipo</Link>
             <Link to="/noticias" onClick={closeMenu} className={getMobileLinkClass('/noticias', '')}>Noticias</Link>
             <Link to="/productos" onClick={closeMenu} className={getMobileLinkClass('/productos', '')}>Tienda</Link>
             <Link to="/contacto" onClick={closeMenu} className={getMobileLinkClass('/contacto', '')}>Contacto</Link>
             
-            {/* Botón de Reserva Móvil Directo a WhatsApp */}
-            <a 
-              href="https://wa.me/51981009863" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              onClick={closeMenu} 
-              className="bg-[#256b3c] text-center text-white px-6 py-3.5 rounded-full text-[16px] font-bold shadow-md mt-4 font-raleway block w-full"
-            >
+            {/* PORTAL MÓVIL */}
+            <Link to="/login" onClick={closeMenu} className="font-bold text-[17px] border-b border-black/5 pb-3 font-raleway transition-colors flex items-center text-[#256b3c]">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Portal
+            </Link>
+            
+            {/* Botón de Reserva Móvil */}
+            <Link to="/reservar-cita" onClick={closeMenu} className="bg-[#256b3c] text-center text-white px-6 py-3.5 rounded-full text-[16px] font-bold shadow-md mt-4 font-raleway block w-full">
               Agendar evaluación
-            </a>
+            </Link>
           </div>
         )}
       </div>
