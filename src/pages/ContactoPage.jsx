@@ -124,7 +124,6 @@ const ContactoPage = () => {
 
             </div>
           </div>
-
           {/* MAPA A PANTALLA COMPLETA EN SU CONTENEDOR */}
           <div className="w-full h-[450px] lg:h-[550px] bg-white rounded-[32px] overflow-hidden shadow-sm border border-black/5 relative group">
             <iframe 
