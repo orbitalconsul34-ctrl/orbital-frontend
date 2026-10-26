@@ -25,7 +25,7 @@ const ProductosPage = () => {
   const [precioFiltro, setPrecioFiltro] = useState(1000);
 
   const aliados = [
-    "expert (1).png", "imaginesmedicas.png", "comercio.jpg", "antaria.png", "apre.png",
+    "expert (1).png", "imaginesmedicas.png", "comercio.jpg", "antaria.png",
     "intermedica.png", "saludTools.png", "vanttive.png"
   ];
 
